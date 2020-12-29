@@ -1,0 +1,17 @@
+include:
+  - template: Terraform.latest.gitlab-ci.yml
+
+build_with_node_recreation:
+  extends: .build
+  before_script:
+    - cd ${TF_ROOT}
+    - gitlab-terraform taint hcloud_server.master 
+    - gitlab-terraform taint hcloud_server.node1 
+  when: manual
+
+destroy:
+  extends: .destroy
+
+variables:
+  TF_STATE_NAME: default
+  TF_CACHE_KEY: default
