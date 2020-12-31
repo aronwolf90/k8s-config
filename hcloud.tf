@@ -13,15 +13,9 @@ variable "public_key" {
 variable "private_key" {
   default = "~/.ssh/id_rsa"
 }
-variable "node_version" {}
 
 provider "hcloud" {
   token = var.hcloud_token
-}
-
-terraform {
-  backend "http" {
-  }
 }
 
 resource "hcloud_ssh_key" "default" {
@@ -37,41 +31,13 @@ resource "hcloud_server" "master" {
 }
 
 resource "hcloud_floating_ip" "master" {
-  name      = "master"
+  name      = "masterv1"
   type      = "ipv4"
   server_id = hcloud_server.master.id
 }
 
-resource "hcloud_volume" "master_config" {
-  name       = "master_config"
-  size       = 10
-  format     = "ext4"
-  server_id  = hcloud_server.master.id
-}
-
-resource "hcloud_volume" "master_calico" {
-  depends_on = [hcloud_volume.master_config]
-
-  name       = "master_calico"
-  size       = 10
-  format     = "ext4"
-  server_id  = hcloud_server.master.id
-}
-
-resource "hcloud_volume" "master_etcd" {
-  depends_on = [hcloud_volume.master_calico]
-
-  name       = "master_etcd"
-  size       = 15
-  format     = "ext4"
-  server_id  = hcloud_server.master.id
-}
-
 resource "null_resource" "install_kubernetes" {
   depends_on = [
-    hcloud_volume.master_config,
-    hcloud_volume.master_etcd,
-    hcloud_volume.master_calico,
     hcloud_server.master,
     hcloud_floating_ip.master
   ]
@@ -87,8 +53,12 @@ resource "null_resource" "install_kubernetes" {
     private_key = file(var.private_key)
   }
   provisioner "file" {
-    source      = "kubeadm_token.sh"
-    destination = "/usr/bin/kubeadm_token.sh"
+    source      = "ca.crt"
+    destination = "/tmp/ca.crt"
+  }
+  provisioner "file" {
+    source      = "ca.key"
+    destination = "/tmp/ca.key"
   }
   provisioner "file" {
     source      = "install_kubedm.rb"
@@ -96,25 +66,13 @@ resource "null_resource" "install_kubernetes" {
   }
   provisioner "remote-exec" {
     inline = [
-      "chmod u+xrw /usr/bin/kubeadm_token.sh",
       "ip addr add ${hcloud_floating_ip.master.ip_address} dev eth0",
-      "mkdir -p /etc/kubernetes",
-      "mkfs.ext4 -F ${hcloud_volume.master_config.linux_device}",
-      "mount -o discard,defaults ${hcloud_volume.master_config.linux_device} /etc/kubernetes",
-      "echo \"${hcloud_volume.master_config.linux_device} /etc/kubernetes $FILESYSTEM discard,nofail,defaults 0 0\" >> /etc/fstab",
-      # /var/lib/etcd
-      "mkdir -p /var/lib/etcd",
-      "mount -o discard,defaults ${hcloud_volume.master_etcd.linux_device} /var/lib/etcd",
-      "echo \"${hcloud_volume.master_etcd.linux_device} /var/lib/etcd ext4 discard,nofail,defaults 0 0\" >> /etc/fstab",
-      "rm -r /var/lib/etcd/lost+found/ || true",
-      # begin /var/lib/calico
-      "mkdir -p /var/lib/calico",
-      "mount -o discard,defaults ${hcloud_volume.master_calico.linux_device} /var/lib/calico",
-      "echo \"${hcloud_volume.master_calico.linux_device} /var/lib/calico ext4 discard,nofail,defaults 0 0\" >> /etc/fstab",
-      "rm -r /var/lib/calico/lost+found/ || true",
-      # end
+      "mkdir -p /etc/kubernetes/pki/",
+      "cp /tmp/ca.crt /etc/kubernetes/pki/ca.crt",
+      "cp /tmp/ca.key /etc/kubernetes/pki/ca.key",
+      # Install
       "bash /tmp/install_kubedm.rb",
-      "kubeadm init --apiserver-advertise-address ${hcloud_floating_ip.master.ip_address} --ignore-preflight-errors=DirAvailable--var-lib-etcd",
+      "kubeadm init --apiserver-advertise-address ${hcloud_floating_ip.master.ip_address} --ignore-preflight-errors=DirAvailable--var-lib-etcd --pod-network-cidr=10.244.0.0/16",
       "curl -LO \"https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl\"",
       "curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.20.0/bin/linux/amd64/kubectl",
       "chmod +x ./kubectl",
@@ -122,7 +80,8 @@ resource "null_resource" "install_kubernetes" {
       "mkdir -p $HOME/.kube",
       "sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config",
       "sudo chown $(id -u):$(id -g) $HOME/.kube/config",
-      "kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml",
+      "kubectl annotate node master flannel.alpha.coreos.com/public-ip-overwrite=${hcloud_floating_ip.master.ip_address}",
+      "kubectl apply -f https://github.com/coreos/flannel/raw/master/Documentation/kube-flannel.yml",
       "kubectl create secret generic hcloud-csi -n kube-system --from-literal=token=${var.hcloud_token}",
       "kubectl apply -f https://raw.githubusercontent.com/hetznercloud/csi-driver/v1.5.1/deploy/kubernetes/hcloud-csi.yml"
     ]
