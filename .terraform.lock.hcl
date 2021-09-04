@@ -21,6 +21,7 @@ provider "registry.terraform.io/hashicorp/external" {
 provider "registry.terraform.io/hashicorp/null" {
   version = "3.0.0"
   hashes = [
+    "h1:V1tzrSG6t3e7zWvUwRbGbhsWU2Jd/anrJpOl9XM+R/8=",
     "h1:ysHGBhBNkIiJLEpthB/IVCLpA1Qoncp3KbCTFGFZTO0=",
     "zh:05fb7eab469324c97e9b73a61d2ece6f91de4e9b493e573bfeda0f2077bc3a4c",
     "zh:1688aa91885a395c4ae67636d411475d0b831e422e005dcf02eedacaafac3bb4",
@@ -39,6 +40,7 @@ provider "registry.terraform.io/hetznercloud/hcloud" {
   version = "1.23.0"
   hashes = [
     "h1:jE1wBARpDjAy/9ORQIooMrbY7Dph4SUrSa6oAFbm1/M=",
+    "h1:saM0Nkf+071U3kTYiPyOWFTxdLCPKEKAa5IK53Cu6JQ=",
     "zh:158d1369f267ce292f6e278202c60a1b35f362d24b94d57c83ef460624ef4dc4",
     "zh:237cf7934682a70b2a911ba7ad5ecef5e6f6c4c7e8c75d5419adee032b843ff3",
     "zh:249a5c0c73852783ce9191076c1cb0cf9a1f53c7a1c3af08be83d7c51ab4d46c",
