@@ -7,6 +7,10 @@ terraform {
 }
 
 variable "hcloud_token" {}
+variable "location" {
+  default = "fsn1" 
+}
+
 variable "public_key" {
   default = "~/.ssh/id_rsa.pub"
 }
@@ -24,30 +28,37 @@ resource "hcloud_ssh_key" "default" {
   public_key = file(var.public_key)
 }
 
-resource "hcloud_volume" "data" {
-  name      = "data"
-  size      = 10
-  format    = "ext4"
-  location  = "hel1"
-}
-
-resource "hcloud_volume_attachment" "data" {
-  volume_id = hcloud_volume.data.id
-  server_id = hcloud_server.master.id
-  automount = true
-}
-
 resource "hcloud_server" "master" {
   name        = "master"
   image       = "ubuntu-20.04"
   server_type = "cx21"
   ssh_keys    = [hcloud_ssh_key.default.id]
+  location    = var.location
+}
+
+resource "hcloud_load_balancer" "master" {
+  name               = "master"
+  load_balancer_type = "lb11"
+  depends_on         = [hcloud_server.master]
+  location           = var.location
+}
+
+resource "hcloud_load_balancer_target" "master" {
+  type             = "server"
+  load_balancer_id = hcloud_load_balancer.master.id
+  server_id        = hcloud_server.master.id
+}
+
+resource "hcloud_load_balancer_service" "load_balancer_service" {
+  load_balancer_id = hcloud_load_balancer.master.id
+  protocol         = "tcp"
+  listen_port      = 6443
+  destination_port = 6443
 }
 
 resource "null_resource" "setup_master" {
   triggers = {
     server_id        = hcloud_server.master.id
-    volume_id        = hcloud_volume_attachment.data.id
   }
 
   connection {
@@ -58,23 +69,33 @@ resource "null_resource" "setup_master" {
   }
 
   provisioner "file" {
-    source      = "install_kubedm.sh"
+    source      = "${path.module}/install_kubedm.sh"
     destination = "/tmp/install_kubedm.sh"
   }
   provisioner "file" {
-    source      = "install_cluster_autoscaler.sh"
+    source      = "${path.module}/install_cluster_autoscaler.sh"
     destination = "/tmp/install_cluster_autoscaler.sh"
   }
   provisioner "file" {
-    source      = "install_master.sh"
+    source      = "${path.module}/install_master.sh"
     destination = "/tmp/install_master.sh"
+  }
+  provisioner "remote-exec" {
+    inline = [
+      "mkdir -p /backups"
+    ]
+  }
+  provisioner "file" {
+    source      = "backups/"
+    destination = "/backups/"
   }
   provisioner "remote-exec" {
     inline = [
       # Install
       "export HCLOUD_TOKEN=${var.hcloud_token}",
-      "export IP_ADDRESS=${hcloud_server.master.ipv4_address}",
+      "export LOAD_BALANCER_IP=${hcloud_load_balancer.master.ipv4}",
       "export SSH_KEY=${hcloud_ssh_key.default.id}",
+      "export LOCATION=${var.location}",
       "bash /tmp/install_master.sh",
     ]
   }
