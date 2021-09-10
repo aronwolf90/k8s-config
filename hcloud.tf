@@ -10,6 +10,9 @@ variable "hcloud_token" {}
 variable "location" {
   default = "fsn1" 
 }
+variable "kubernetes_version" {
+  default = "1.18.20"
+}
 
 variable "public_key" {
   default = "~/.ssh/id_rsa.pub"
@@ -96,6 +99,7 @@ resource "null_resource" "setup_master" {
       "export LOAD_BALANCER_IP=${hcloud_load_balancer.master.ipv4}",
       "export SSH_KEY=${hcloud_ssh_key.default.id}",
       "export LOCATION=${var.location}",
+      "export KUBERNETES_VERSION=${var.kubernetes_version}",
       "bash /tmp/install_master.sh",
     ]
   }

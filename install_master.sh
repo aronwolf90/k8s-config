@@ -22,7 +22,8 @@ if [ ! -f /etc/kubernetes/pki/ca.crt ]; then
   
   kubeadm init --pod-network-cidr=10.244.0.0/16 \
     --control-plane-endpoint $LOAD_BALANCER_IP:6443 \
-    --ignore-preflight-errors=DirAvailable--var-lib-etcd
+    --ignore-preflight-errors=DirAvailable--var-lib-etcd \
+    --kubernetes-version $KUBERNETES_VERSION
 else
   sleep 60
 fi

@@ -1,4 +1,5 @@
-cat /tmp/install_kubedm.sh > /tmp/install_node_kubedm.sh
+echo "\$KUBERNETES_VERSION=$KUBERNETES_VERSION" > /tmp/install_node_kubedm.sh
+cat /tmp/install_kubedm.sh >> /tmp/install_node_kubedm.sh
 kubeadm token create --ttl 0 --print-join-command >> /tmp/install_node_kubedm.sh
 
 cat <<EOF | tee /tmp/cluster_autoscaler.yml

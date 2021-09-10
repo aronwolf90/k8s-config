@@ -33,5 +33,8 @@ EOF
 modprobe br_netfilter
 sudo apt-get update
 sudo apt-get upgrade -y
-sudo apt-get install -y kubelet kubeadm kubectl || true
+sudo apt-get install -y \
+  kubelet=$KUBERNETES_VERSION-00 \
+  kubeadm=$KUBERNETES_VERSION-00 \
+  kubectl=$KUBERNETES_VERSION-00 || true
 sudo apt-mark hold kubelet kubeadm kubectl || true
