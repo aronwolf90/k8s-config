@@ -83,6 +83,14 @@ resource "null_resource" "setup_master" {
     source      = "${path.module}/install_master.sh"
     destination = "/tmp/install_master.sh"
   }
+  provisioner "file" {
+    source      = "${path.module}/hcloud.sh"
+    destination = "/tmp/hcloud.sh"
+  }
+  provisioner "file" {
+    source      = "${path.module}/token.yaml"
+    destination = "/tmp/token.yaml"
+  }
   provisioner "remote-exec" {
     inline = [
       "mkdir -p /backups"
@@ -103,4 +111,22 @@ resource "null_resource" "setup_master" {
       "bash /tmp/install_master.sh",
     ]
   }
+}
+
+data "external" "token" {
+  depends_on = [null_resource.setup_master]
+
+  program = [
+    "bash",
+    "-c",
+    "MASTER_IP=${hcloud_server.master.ipv4_address} ${path.module}/get_token.sh"
+  ]
+}
+
+output "token" {
+  value = data.external.token.result.token 
+}
+
+output "host" {
+  value = "https://${hcloud_load_balancer.master.ipv4}:6443"
 }

@@ -38,3 +38,8 @@ sudo apt-get install -y \
   kubeadm=$KUBERNETES_VERSION-00 \
   kubectl=$KUBERNETES_VERSION-00 || true
 sudo apt-mark hold kubelet kubeadm kubectl || true
+
+cat <<EOF | sudo tee /etc/systemd/system/kubelet.service.d/20-hcloud.conf
+[Service]
+Environment="KUBELET_EXTRA_ARGS=--cloud-provider=external"
+EOF
