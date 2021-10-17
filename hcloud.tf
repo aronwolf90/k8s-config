@@ -6,7 +6,10 @@ terraform {
   }
 }
 
-variable "hcloud_token" {}
+variable "hcloud_token" {
+  sensitive = true
+}
+
 variable "location" {
   default = "fsn1" 
 }
