@@ -26,6 +26,10 @@ if [ ! -f /etc/kubernetes/pki/ca.crt ]; then
     --kubernetes-version $KUBERNETES_VERSION
 else
   sleep 60
+
+  kubeadm upgrade apply v$KUBERNETES_VERSION -y
+  sudo systemctl daemon-reload
+  sudo systemctl restart kubelet
 fi
 
 mkdir -p $HOME/.kube
@@ -41,3 +45,16 @@ kubectl apply -f https://raw.githubusercontent.com/hetznercloud/csi-driver/v1.6.
 bash /tmp/hcloud.sh
 kubectl apply -f /tmp/token.yaml
 bash /tmp/install_cluster_autoscaler.sh
+
+SERVERS=$(
+  kubectl get nodes -o json |
+  jq -r "[.items[] | select(.status.nodeInfo.kubeletVersion != \"v$KUBERNETES_VERSION\")]"
+)
+
+for SERVER in $(echo $SERVERS | jq -r '.[] | @base64'); do
+  NAME=$(echo $SERVER | base64 --decode | jq -r '.metadata.name')
+  ID=$(echo $SERVER | base64 --decode | jq -r '.metadata.annotations."csi.volume.kubernetes.io/nodeid"' | sed 's/[^0-9]*//g')
+  kubectl drain $NAME --delete-local-data --ignore-daemonsets
+  sleep 30
+  curl -X DELETE -H "Authorization: Bearer $HCLOUD_TOKEN" "https://api.hetzner.cloud/v1/servers/$ID"
+done

@@ -6,15 +6,13 @@ terraform {
   }
 }
 
-variable "hcloud_token" {
-  sensitive = true
-}
+variable "hcloud_token" {}
 
 variable "location" {
   default = "fsn1" 
 }
 variable "kubernetes_version" {
-  default = "1.18.20"
+  default = "1.19.15"
 }
 
 variable "public_key" {
@@ -64,7 +62,8 @@ resource "hcloud_load_balancer_service" "load_balancer_service" {
 
 resource "null_resource" "setup_master" {
   triggers = {
-    server_id        = hcloud_server.master.id
+    server_id          = hcloud_server.master.id
+    kubernetes_version = var.kubernetes_version
   }
 
   connection {

@@ -11,7 +11,7 @@ net.bridge.bridge-nf-call-iptables = 1
 EOF
 sysctl --system
 
-apt-get update && sudo apt-get install -y apt-transport-https curl docker.io
+apt-get update && sudo apt-get install -y apt-transport-https curl docker.io jq
 cat <<EOF | sudo tee /etc/docker/daemon.json
 {
   "exec-opts": ["native.cgroupdriver=systemd"],
@@ -33,6 +33,7 @@ EOF
 modprobe br_netfilter
 sudo apt-get update
 sudo apt-get upgrade -y
+sudo apt-mark unhold kubelet kubeadm kubectl || true
 sudo apt-get install -y \
   kubelet=$KUBERNETES_VERSION-00 \
   kubeadm=$KUBERNETES_VERSION-00 \
