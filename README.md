@@ -33,9 +33,9 @@ module "cluster" {
 The module assumes that you have your public key in `~/.ssh/id_rsa.pub`. Once you have adjusted your terraform file you just have to run `terraform apply`.
 
 ## Min costs
-Master node (CX21): 2CPU and 4GB -> 5,83 EUR
-Worker node (CPX11): 2CPU and 2GB -> 4,75 EUR
-Load balancer (LB11) -> 5,83 EUR
+* Master node (CX21): 2CPU and 4GB -> 5,83 EUR
+* Worker node (CPX11): 2CPU and 2GB -> 4,75 EUR
+* Load balancer (LB11) -> 5,83 EUR
 
 This is at the moment of writing this 16,41 EUR per month.
 
