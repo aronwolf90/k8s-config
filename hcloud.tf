@@ -9,7 +9,7 @@ terraform {
 variable "hcloud_token" {}
 
 variable "location" {
-  default = "fsn1" 
+  default = "fsn1"
 }
 variable "kubernetes_version" {
   default = "1.19.15"
@@ -28,7 +28,7 @@ variable "private_key" {
 }
 
 resource "hcloud_ssh_key" "default" {
-  name = "Default ssh key"
+  name       = "Default ssh key"
   public_key = file(var.public_key)
 }
 
@@ -168,7 +168,7 @@ data "external" "token" {
 }
 
 output "token" {
-  value = data.external.token.result.token 
+  value = data.external.token.result.token
 }
 
 output "host" {
