@@ -60,6 +60,42 @@ resource "hcloud_load_balancer_service" "load_balancer_service" {
   destination_port = 6443
 }
 
+resource "null_resource" "clean_worker_nodes" {
+  depends_on = [
+    hcloud_server.master,
+    hcloud_load_balancer.master,
+    hcloud_load_balancer_target.master,
+    hcloud_load_balancer_service.load_balancer_service
+  ]
+
+  triggers = {
+    private_key  = var.private_key
+    ipv4_address = hcloud_server.master.ipv4_address
+    hcloud_token = var.hcloud_token
+  }
+
+  connection {
+    host        = self.triggers.ipv4_address
+    type        = "ssh"
+    user        = "root"
+    private_key = file(self.triggers.private_key)
+  }
+
+  provisioner "file" {
+    source      = "${path.module}/delete_worder_nodes.sh"
+    destination = "/usr/local/bin/delete_worder_nodes.sh"
+  }
+
+  provisioner "remote-exec" {
+    when = destroy
+    inline = [
+      "kubectl delete deployment cluster-autoscaler -n kube-system || true",
+      "export HCLOUD_TOKEN=${self.triggers.hcloud_token}",
+      "bash /usr/local/bin/delete_worder_nodes.sh"
+    ]
+  }
+}
+
 resource "null_resource" "setup_master" {
   triggers = {
     server_id          = hcloud_server.master.id
@@ -98,6 +134,9 @@ resource "null_resource" "setup_master" {
       "mkdir -p /backups"
     ]
   }
+  provisioner "local-exec" {
+    command = "mkdir -p backups"
+  }
   provisioner "file" {
     source      = "backups/"
     destination = "/backups/"
@@ -112,6 +151,9 @@ resource "null_resource" "setup_master" {
       "export KUBERNETES_VERSION=${var.kubernetes_version}",
       "bash /tmp/install_master.sh",
     ]
+  }
+  provisioner "local-exec" {
+    command = "bash ${path.module}/backup.sh ${hcloud_server.master.ipv4_address}"
   }
 }
 
