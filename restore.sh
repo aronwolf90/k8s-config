@@ -1,6 +1,7 @@
 #!/usr/bin/bash
 
 mkdir -p /var/lib/etcd
+# shellcheck disable=SC2012
 docker run --rm \
   -v '/backups:/backups' \
   -v '/var/lib/etcd:/var/lib/etcd' \

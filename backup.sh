@@ -2,7 +2,7 @@
 
 mkdir -p backups
 
-ssh -o "StrictHostKeyChecking=no" root@$1 <<EOF
+ssh -o "StrictHostKeyChecking=no" root@"$1" <<EOF
 docker run --rm \
   -v '/tmp:/tmp' \
   -v '/var/lib/etcd:/var/lib/etcd' \
@@ -13,6 +13,6 @@ docker run --rm \
   etcdctl --endpoints=https://127.0.0.1:2379 --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/healthcheck-client.crt --key=/etc/kubernetes/pki/etcd/healthcheck-client.key snapshot save /tmp/etcd-snapshot.db
 EOF
 
-scp -o "StrictHostKeyChecking=no" root@$1:/tmp/etcd-snapshot.db backups
-scp -o "StrictHostKeyChecking=no" root@$1:/etc/kubernetes/pki/ca.crt backups
-scp -o "StrictHostKeyChecking=no" root@$1:/etc/kubernetes/pki/ca.key backups
+scp -o "StrictHostKeyChecking=no" root@"$1":/tmp/etcd-snapshot.db backups
+scp -o "StrictHostKeyChecking=no" root@"$1":/etc/kubernetes/pki/ca.crt backups
+scp -o "StrictHostKeyChecking=no" root@"$1":/etc/kubernetes/pki/ca.key backups

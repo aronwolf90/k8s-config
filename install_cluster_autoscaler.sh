@@ -1,6 +1,12 @@
+#!/bin/bash
+
+set -e
+
+# shellcheck disable=SC2002
 cat /tmp/install_kubedm.sh | sed "s/\$KUBERNETES_VERSION/$KUBERNETES_VERSION/g" > /tmp/install_node_kubedm.sh
 kubeadm token create --ttl 0 --print-join-command >> /tmp/install_node_kubedm.sh
 
+# shellcheck disable=SC2002
 cat <<EOF | tee /tmp/cluster_autoscaler.yml
 ---
 apiVersion: v1

@@ -35,9 +35,9 @@ sudo apt-get update
 sudo apt-get upgrade -y
 sudo apt-mark unhold kubelet kubeadm kubectl || true
 sudo apt-get install -y \
-  kubelet=$KUBERNETES_VERSION-00 \
-  kubeadm=$KUBERNETES_VERSION-00 \
-  kubectl=$KUBERNETES_VERSION-00 || true
+  kubelet="$KUBERNETES_VERSION-00" \
+  kubeadm="$KUBERNETES_VERSION-00" \
+  kubectl="$KUBERNETES_VERSION-00" || true
 sudo apt-mark hold kubelet kubeadm kubectl || true
 
 cat <<EOF | sudo tee /etc/systemd/system/kubelet.service.d/20-hcloud.conf
