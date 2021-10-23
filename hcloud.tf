@@ -129,17 +129,12 @@ resource "null_resource" "setup_master" {
     source      = "${path.module}/token.yaml"
     destination = "/tmp/token.yaml"
   }
-  provisioner "remote-exec" {
-    inline = [
-      "mkdir -p /backups"
-    ]
-  }
   provisioner "local-exec" {
-    command = "mkdir -p backups"
-  }
-  provisioner "file" {
-    source      = "backups/"
-    destination = "/backups/"
+    command = <<EOT
+      if ssh -o 'StrictHostKeyChecking=no' root@${hcloud_server.master.ipv4_address} 'kubectl version'; then
+        bash ${path.module}/backup.sh ${hcloud_server.master.ipv4_address}
+      fi
+    EOT
   }
   provisioner "remote-exec" {
     inline = [
@@ -151,9 +146,6 @@ resource "null_resource" "setup_master" {
       "export KUBERNETES_VERSION=${var.kubernetes_version}",
       "bash /tmp/install_master.sh",
     ]
-  }
-  provisioner "local-exec" {
-    command = "bash ${path.module}/backup.sh ${hcloud_server.master.ipv4_address}"
   }
 }
 
