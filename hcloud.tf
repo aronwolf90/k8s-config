@@ -166,3 +166,7 @@ output "token" {
 output "host" {
   value = "https://${hcloud_load_balancer.master.ipv4}:6443"
 }
+
+output "master_ip4" {
+  value = "${hcloud_server.master.ipv4_address}"
+}

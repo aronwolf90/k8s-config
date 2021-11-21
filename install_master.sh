@@ -5,22 +5,22 @@ set -e
 bash /tmp/install_kubedm.sh
 
 if [ ! -f /etc/kubernetes/pki/ca.crt ]; then
-  if [ -f /backups/ca.crt ]; then
+  if [ -f /restore/ca.crt ]; then
     mkdir -p /var/lib/etcd
     mkdir -p /etc/kubernetes/pki/
-  
-    cp /backups/ca.crt /etc/kubernetes/pki/ca.crt 
-    cp /backups/ca.key /etc/kubernetes/pki/ca.key 
-  
+ 
+    cp /restore/ca.crt /etc/kubernetes/pki/ca.crt 
+    cp /restore/ca.key /etc/kubernetes/pki/ca.key 
+ 
     # shellcheck disable=SC2012
     docker run --rm \
-      -v '/backups:/backups' \
+      -v '/restore:/restore' \
       -v '/var/lib/etcd:/default.etcd/' \
       --env ETCDCTL_API=3 \
       k8s.gcr.io/etcd:3.5.0-0 \
-      /bin/sh -c "etcdctl snapshot restore '$(ls -1t /backups/*db | tail -1)'"
+      /bin/sh -c "etcdctl snapshot restore '$(ls -1t /restore/*db | tail -1)'"
   fi
-  
+ 
   kubeadm init --pod-network-cidr=10.244.0.0/16 \
     --control-plane-endpoint "$LOAD_BALANCER_IP:6443" \
     --ignore-preflight-errors=DirAvailable--var-lib-etcd \
