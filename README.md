@@ -1,6 +1,6 @@
 # Hetzner cluster
 
-It is a terraform module that allow to deploy a kubedm based clsuter on hetzner easily:
+It is a terraform module that allow to deploy a kubedm based cluster on hetzner easily:
 
 It supports the following features:
 - Setup a full working k8s in a few minutes.
@@ -34,7 +34,7 @@ module "cluster" {
 }
 ```
 
-The module assumes that you have your public key in `~/.ssh/id_rsa.pub`. Once you have adjusted your terraform file you just have to run `terraform apply`.
+The module assumes that you have your public key in `~/.ssh/id_rsa.pub`. Once you have adjusted your terraform file, you just have to run `terraform apply`.
 
 ## Outputs
 * `token`: A token that can be used to access the k8s api.
@@ -47,9 +47,9 @@ The module assumes that you have your public key in `~/.ssh/id_rsa.pub`. Once yo
 * Worker node (CPX11): 2CPU and 2GB -> 4,75 EUR
 * Load balancer (LB11) -> 5,83 EUR
 
-This is at the moment of writing this 16,41 EUR per month.
+This is at the moment of writing 16,41 EUR per month.
 
-NOTE: Comparing to GCloud it is 3 times cheaper for the first cluster and 5 times cheaper for the second cluster (For the first cluster GCloud does not charge for the master node).
+NOTE: Comparing to GCloud, it is 3 times cheaper for the first cluster and 5 times cheaper for the second cluster (For the first cluster GCloud does not charge for the master node).
 
 NOTE: A load balancer is used for the api to allow easier disaster recovery.
 
@@ -58,15 +58,15 @@ Just change `kubernetes_version` to the desired version and run `terraform apply
 
 ## Replace master node.
 It can happen that you need to replace the master nodes. One cause can be that you want to replace the node operation system
-(it can be done by changing masters=[{name = "master", image="<image>" }]). The problem is that
+(it can be done by changing `masters=[{name = "master", image="<image>" }]`). The problem is that
 the data is stored in the master nodes, so that this could leave to lose all of your k8s configurations.
 The solution to this is to replace one per one master node instead of replacing all of them at the same time.
 
 In the case that you use more than one master node, do the following:
-- Recreate the master node (E.g. change his image) and put shutodown to true.
-  ```
+- Recreate the master node (E.g. change his image).
+  ```bash
   masters = [
-    {name = "master_1", image="<new image>" },
+    {name = "master1", image="<new image>" },
     ...
   ]
   ```
@@ -74,16 +74,16 @@ In the case that you use more than one master node, do the following:
 - Repeat the same with the other master nodes.
 
 In case that you are only using one master node to save money, do the following:
-- You need to scale up to 2 master if you are using only one. For this adjust the variable `masters`.
-  ```
+- You need to scale up to two master nodes. For this adjust the variable `masters`.
+  ```bash
   masters=[
     {name = "master",  image="<image>" },
-    {name = "master_v2", image="<image>" }
+    {name = "master_v2", image="<new image>" }
   ]
   main_master_name = "master"
   ```
 - Wait some time until the two master have syncronized, then set the new master to main_master_name and remove the old master.
-  ```
+  ```bash
   masters=[
     {name = "master_v2", image="<image>" }
   ]
@@ -94,3 +94,12 @@ NOTE: Do not forget to make a backup before doing the above.
 
 NOTE: Feel free to create a MR that reduce all of this to one only step.
 (E.g. by using create_before_destroy).
+
+# Contribute
+- Execute `git clone git@gitlab.com:webcloudpower/hetzner_cluster.git`.
+- Create a `terraform.tfvars` file with the following content:
+  ```
+  hcloud_token = <token>
+  ```
+
+You can now test you changes with `terraform apply` or `docker-compose run --rm app go test -timeout=9999s`

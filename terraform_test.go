@@ -191,6 +191,9 @@ func TestTerraformWithMultipleInitialMasters(t *testing.T) {
   defer terraform.Destroy(t, terraformOptions)
 
   terraform.InitAndApply(t, terraformOptions)
+
+	outputHost := terraform.Output(t, terraformOptions, "host")
+	outputToken := terraform.Output(t, terraformOptions, "token")
   clientset := CreateClientset(outputHost, outputToken)
   CheckNodes(clientset)
 	CreateDeployment(clientset)

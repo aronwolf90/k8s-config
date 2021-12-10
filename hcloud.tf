@@ -11,6 +11,7 @@ variable "hcloud_token" {}
 variable "location" {
   default = "fsn1"
 }
+
 variable "kubernetes_version" {
   default = "1.19.15"
 }
@@ -22,8 +23,8 @@ variable "public_key" {
 variable "master_nodes" {
   type = list(
     object({
-      name     = string
-      image    = string
+      name  = string
+      image = string
     })
   )
 
@@ -41,7 +42,7 @@ provider "hcloud" {
 }
 
 locals {
-  transformed_master_nodes = {for node in var.master_nodes : node.name => { image = node.image }}
+  transformed_master_nodes = { for node in var.master_nodes : node.name => { image = node.image } }
 }
 
 variable "private_key" {
@@ -207,7 +208,7 @@ data "external" "token" {
   program = [
     "bash",
     "-c",
-    "MASTER_IPS=\"${join(" ",[for key, node in hcloud_server.master : node.ipv4_address])}\" ${path.module}/get_token.sh"
+    "MASTER_IPS=\"${join(" ", [for key, node in hcloud_server.master : node.ipv4_address])}\" ${path.module}/get_token.sh"
   ]
 }
 
