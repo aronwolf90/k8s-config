@@ -1,4 +1,7 @@
 *.tfvars
 *.tfstate
 *.tfstate.backup
+.terraform.lock.hcl
+.terraform/
 backups/*
+master_join_command.txt

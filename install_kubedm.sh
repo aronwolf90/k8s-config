@@ -11,7 +11,7 @@ net.bridge.bridge-nf-call-iptables = 1
 EOF
 sysctl --system
 
-apt-get update && sudo apt-get install -y apt-transport-https curl docker.io jq
+apt-get update && sudo apt-get install -y apt-transport-https curl docker.io jq etcd-client
 cat <<EOF | sudo tee /etc/docker/daemon.json
 {
   "exec-opts": ["native.cgroupdriver=systemd"],

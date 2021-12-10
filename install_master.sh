@@ -5,26 +5,15 @@ set -e
 bash /tmp/install_kubedm.sh
 
 if [ ! -f /etc/kubernetes/pki/ca.crt ]; then
-  if [ -f /restore/ca.crt ]; then
-    mkdir -p /var/lib/etcd
-    mkdir -p /etc/kubernetes/pki/
- 
-    cp /restore/ca.crt /etc/kubernetes/pki/ca.crt 
-    cp /restore/ca.key /etc/kubernetes/pki/ca.key 
- 
-    # shellcheck disable=SC2012
-    docker run --rm \
-      -v '/restore:/restore' \
-      -v '/var/lib/etcd:/default.etcd/' \
-      --env ETCDCTL_API=3 \
-      k8s.gcr.io/etcd:3.5.0-0 \
-      /bin/sh -c "etcdctl snapshot restore '$(ls -1t /restore/*db | tail -1)'"
+  if [ -z "$MASTER_JOIN_COMMAND" ]; then
+    kubeadm init --pod-network-cidr=10.244.0.0/16 \
+      --control-plane-endpoint "$LOAD_BALANCER_IP:6443" \
+      --ignore-preflight-errors=DirAvailable--var-lib-etcd \
+      --kubernetes-version "$KUBERNETES_VERSION"
+  else
+    # shellcheck disable=SC2086
+    $MASTER_JOIN_COMMAND
   fi
- 
-  kubeadm init --pod-network-cidr=10.244.0.0/16 \
-    --control-plane-endpoint "$LOAD_BALANCER_IP:6443" \
-    --ignore-preflight-errors=DirAvailable--var-lib-etcd \
-    --kubernetes-version "$KUBERNETES_VERSION"
 else
   sleep 60
 

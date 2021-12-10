@@ -13,4 +13,5 @@ RUN curl -fsSL https://apt.releases.hashicorp.com/gpg | apt-key add - && \
   apt-add-repository "deb [arch=$(dpkg --print-architecture)] https://apt.releases.hashicorp.com $(lsb_release -cs) main" -y && \
    apt-get install terraform -y
 
-RUN echo "export PATH=$PATH:/usr/local/go/bin" >> $HOME/.profile
+RUN echo "export PATH=$PATH:/usr/local/go/bin" >> /etc/profile && \
+  echo "export PATH=$PATH:/usr/local/go/bin" >> ~/.bashrc

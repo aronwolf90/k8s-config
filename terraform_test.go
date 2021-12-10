@@ -18,7 +18,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func CheckDeployment(clientset *kubernetes.Clientset) {
+func CreateDeployment(clientset *kubernetes.Clientset) {
   deploymentsClient := clientset.AppsV1().Deployments(apiv1.NamespaceDefault)
 	deployment := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
@@ -60,7 +60,9 @@ func CheckDeployment(clientset *kubernetes.Clientset) {
 		panic(err)
 	}
 	fmt.Printf("Created deployment %q.\n", result.GetObjectMeta().GetName())
+}
 
+func CheckDeployment(clientset *kubernetes.Clientset) {
   pods, err := clientset.CoreV1().Pods("default").List(context.TODO(), metav1.ListOptions{})
   if err != nil {
 	  panic(err.Error())
@@ -102,8 +104,35 @@ func CheckNodes(clientset *kubernetes.Clientset) {
     if count > 420 {
        panic("No worker node created")
     }
-    time.Sleep(time.Second)
+	  time.Sleep(time.Second)
   }
+}
+
+func ScaleMasterNodesUp(t *testing.T) {
+	terraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
+		TerraformDir: ".",
+		Vars: map[string]interface{} {
+		  "master_nodes": []map[string]string{
+			  {"name": "master", "image": "ubuntu-20.04" },
+			  {"name": "master2", "image": "ubuntu-20.04" },
+			},
+		},
+	})
+	terraform.Apply(t, terraformOptions)
+	// TODO: Find a way to check every second if the master is in sycron instead of this.
+	time.Sleep(time.Second * 120)
+}
+
+func RemoveMasterNode(t *testing.T) {
+	terraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
+		TerraformDir: ".",
+		Vars: map[string]interface{} {
+		  "master_nodes": []map[string]string{
+			  {"name": "master2", "image": "ubuntu-20.04" },
+			},
+		},
+	})
+	terraform.Apply(t, terraformOptions)
 }
 
 func CreateClientset(host string, token string) *kubernetes.Clientset {
@@ -136,10 +165,33 @@ func TestTerraform(t *testing.T) {
 	outputHost := terraform.Output(t, terraformOptions, "host")
 	assert.Regexp(t, regexp.MustCompile(`.+`), outputHost)
 
-	outputMasterIp4 := terraform.Output(t, terraformOptions, "master_ip4")
-	assert.Regexp(t, regexp.MustCompile(`.+`), outputMasterIp4)
+  outputMasterNodes := terraform.OutputMapOfObjects(t, terraformOptions, "master_nodes")
+	assert.Regexp(t, regexp.MustCompile(`.+`), outputMasterNodes["master"].(map[string]interface {})["ipv4_address"])
 
   clientset := CreateClientset(outputHost, outputToken)
   CheckNodes(clientset)
+	CreateDeployment(clientset)
   CheckDeployment(clientset)
+  ScaleMasterNodesUp(t)
+	RemoveMasterNode(t)
+  CheckDeployment(clientset)
+}
+
+func TestTerraformWithMultipleInitialMasters(t *testing.T) {
+  terraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
+    TerraformDir: ".",
+    Vars: map[string]interface{} {
+      "master_nodes": []map[string]string{
+        {"name": "master", "image": "ubuntu-20.04" },
+        {"name": "master2", "image": "ubuntu-20.04" },
+      },
+    },
+  })
+
+  defer terraform.Destroy(t, terraformOptions)
+
+  terraform.InitAndApply(t, terraformOptions)
+  clientset := CreateClientset(outputHost, outputToken)
+  CheckNodes(clientset)
+	CreateDeployment(clientset)
 }

@@ -19,8 +19,29 @@ variable "public_key" {
   default = "~/.ssh/id_rsa.pub"
 }
 
+variable "master_nodes" {
+  type = list(
+    object({
+      name     = string
+      image    = string
+    })
+  )
+
+  default = [
+    { name = "master", image = "ubuntu-20.04" },
+  ]
+}
+
+variable "main_master_name" {
+  default = "master"
+}
+
 provider "hcloud" {
   token = var.hcloud_token
+}
+
+locals {
+  transformed_master_nodes = {for node in var.master_nodes : node.name => { image = node.image }}
 }
 
 variable "private_key" {
@@ -33,7 +54,9 @@ resource "hcloud_ssh_key" "default" {
 }
 
 resource "hcloud_server" "master" {
-  name        = "master"
+  for_each = local.transformed_master_nodes
+
+  name        = each.key
   image       = "ubuntu-20.04"
   server_type = "cx21"
   ssh_keys    = [hcloud_ssh_key.default.id]
@@ -48,9 +71,15 @@ resource "hcloud_load_balancer" "master" {
 }
 
 resource "hcloud_load_balancer_target" "master" {
+  for_each = hcloud_server.master
+
+  depends_on = [
+    hcloud_server.master
+  ]
+
   type             = "server"
   load_balancer_id = hcloud_load_balancer.master.id
-  server_id        = hcloud_server.master.id
+  server_id        = each.value.id
 }
 
 resource "hcloud_load_balancer_service" "load_balancer_service" {
@@ -60,7 +89,9 @@ resource "hcloud_load_balancer_service" "load_balancer_service" {
   destination_port = 6443
 }
 
-resource "null_resource" "clean_worker_nodes" {
+resource "null_resource" "clean" {
+  for_each = hcloud_server.master
+
   depends_on = [
     hcloud_server.master,
     hcloud_load_balancer.master,
@@ -70,7 +101,7 @@ resource "null_resource" "clean_worker_nodes" {
 
   triggers = {
     private_key  = var.private_key
-    ipv4_address = hcloud_server.master.ipv4_address
+    ipv4_address = each.value.ipv4_address
     hcloud_token = var.hcloud_token
   }
 
@@ -89,21 +120,36 @@ resource "null_resource" "clean_worker_nodes" {
   provisioner "remote-exec" {
     when = destroy
     inline = [
-      "kubectl delete deployment cluster-autoscaler -n kube-system || true",
       "export HCLOUD_TOKEN=${self.triggers.hcloud_token}",
       "bash /usr/local/bin/delete_worder_nodes.sh"
     ]
   }
+
+  provisioner "file" {
+    source      = "${path.module}/remove_master_from_cluster.sh"
+    destination = "/usr/local/bin/remove_master_from_cluster.sh"
+  }
+
+  provisioner "remote-exec" {
+    when = destroy
+    inline = [
+      "export NAME=${each.key}",
+      "bash /usr/local/bin/remove_master_from_cluster.sh"
+    ]
+  }
+
 }
 
 resource "null_resource" "setup_master" {
+  for_each = hcloud_server.master
+
   triggers = {
-    server_id          = hcloud_server.master.id
+    server_id          = each.value.id
     kubernetes_version = var.kubernetes_version
   }
 
   connection {
-    host        = hcloud_server.master.ipv4_address
+    host        = each.value.ipv4_address
     type        = "ssh"
     user        = "root"
     private_key = file(var.private_key)
@@ -131,10 +177,15 @@ resource "null_resource" "setup_master" {
   }
   provisioner "local-exec" {
     command = <<EOT
-      if ssh -o 'StrictHostKeyChecking=no' root@${hcloud_server.master.ipv4_address} 'kubectl version'; then
-        bash ${path.module}/backup.sh ${hcloud_server.master.ipv4_address}
+      if [ ${var.main_master_name} != ${each.key} ]; then
+        export MAIN_MASTER_IP=${hcloud_server.master[var.main_master_name].ipv4_address}
+        ${path.module}/generate_join_command.sh
       fi
     EOT
+  }
+  provisioner "file" {
+    source      = "${path.module}/master_join_command.txt"
+    destination = "/tmp/master_join_command.txt"
   }
   provisioner "remote-exec" {
     inline = [
@@ -144,6 +195,7 @@ resource "null_resource" "setup_master" {
       "export SSH_KEY=${hcloud_ssh_key.default.id}",
       "export LOCATION=${var.location}",
       "export KUBERNETES_VERSION=${var.kubernetes_version}",
+      "if [ ${var.main_master_name} != ${each.key} ]; then export MASTER_JOIN_COMMAND=\"$(cat /tmp/master_join_command.txt)\"; fi",
       "bash /tmp/install_master.sh",
     ]
   }
@@ -155,7 +207,7 @@ data "external" "token" {
   program = [
     "bash",
     "-c",
-    "MASTER_IP=${hcloud_server.master.ipv4_address} ${path.module}/get_token.sh"
+    "MASTER_IPS=\"${join(" ",[for key, node in hcloud_server.master : node.ipv4_address])}\" ${path.module}/get_token.sh"
   ]
 }
 
@@ -167,6 +219,8 @@ output "host" {
   value = "https://${hcloud_load_balancer.master.ipv4}:6443"
 }
 
-output "master_ip4" {
-  value = "${hcloud_server.master.ipv4_address}"
+output "master_nodes" {
+  value = {
+    for key, node in hcloud_server.master : key => { ipv4_address = node.ipv4_address }
+  }
 }

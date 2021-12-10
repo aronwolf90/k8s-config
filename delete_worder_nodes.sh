@@ -2,13 +2,12 @@
 
 set -e
 
-SERVER_IDS=$(
-  kubectl get nodes -o json |
-  jq -r '[.items[] | select(.metadata.name != "master")]' |
-  jq -r '.[].metadata.annotations."csi.volume.kubernetes.io/nodeid"' |
-  sed 's/[^0-9]*//g'
-)
+kubectl delete deployment cluster-autoscaler -n kube-system || true
 
-for ID in $SERVER_IDS; do
-  curl -X DELETE -H "Authorization: Bearer $HCLOUD_TOKEN" "https://api.hetzner.cloud/v1/servers/$ID"
+NUMBER_PAGES=$(curl -X GET -H "Authorization: Bearer $HCLOUD_TOKEN" https://api.hetzner.cloud/v1/servers | jq ".meta.pagination.last_page")
+
+for PAGE in $(seq 1 "$NUMBER_PAGES"); do
+  for ID in $(curl -X GET -H "Authorization: Bearer $HCLOUD_TOKEN" "https://api.hetzner.cloud/v1/servers?page=$PAGE" | jq '.servers[] | select(.name|test("pool")) | .id'); do
+    curl -X DELETE -H "Authorization: Bearer $HCLOUD_TOKEN" "https://api.hetzner.cloud/v1/servers/$ID" || true
+  done
 done
