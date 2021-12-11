@@ -27,6 +27,8 @@ module "cluster" {
   hcloud_token       = "MY_HETZNER_TOKEN"
   kubernetes_version = "1.19.15"  
   location           = "fsn1" 
+  # The variable is used to specify what master node
+  # to use to get a join token.
   main_master_name   = "master" 
   master_nodes       = [ 
     { name = "master",  image="ubuntu-20.04" }
@@ -63,12 +65,15 @@ the data is stored in the master nodes, so that this could leave to lose all of 
 The solution to this is to replace one per one master node instead of replacing all of them at the same time.
 
 In the case that you use more than one master node, do the following:
-- Recreate the master node (E.g. change his image).
+- Recreate the master node (E.g. change his image). Make sure that the variable
+  `main_master_name` point to a other node that the one that you try to replace.
   ```bash
   masters = [
     {name = "master1", image="<new image>" },
+    {name = "master2", image="<image>" },
     ...
   ]
+  main_master_name = "master2"
   ```
 - Wait that the recreted master is syncronized with the rest of master nodes.
 - Repeat the same with the other master nodes.
@@ -92,7 +97,7 @@ In case that you are only using one master node to save money, do the following:
 
 NOTE: Do not forget to make a backup before doing the above.
 
-NOTE: Feel free to create a MR that reduce all of this to one only step.
+NOTE: Feel free to create a MR that reduce all of this to only one step.
 (E.g. by using create_before_destroy).
 
 # Contribute
@@ -103,3 +108,12 @@ NOTE: Feel free to create a MR that reduce all of this to one only step.
   ```
 
 You can now test you changes with `terraform apply` or `docker-compose run --rm app go test -timeout=9999s`
+
+# TODOs
+* Remove the need of the variable `main_master_name`. The main problem here is, that one master node
+  need to be used for initializing the cluster. One solution could be, that every master
+  node interact with each another to decide, which should be right now the main master
+  node.
+* Add support for `create_before_destroy`. The main problem here is, that before removing the old
+  master node, it needs to be made sure that the new master etcd's database has been syncronized with
+  the rest of the cluster. One solution could be to compare the size of the new and old etcd database.
