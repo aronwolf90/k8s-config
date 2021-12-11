@@ -181,6 +181,8 @@ resource "null_resource" "setup_master" {
       if [ ${var.main_master_name} != ${each.key} ]; then
         export MAIN_MASTER_IP=${hcloud_server.master[var.main_master_name].ipv4_address}
         ${path.module}/generate_join_command.sh
+      else
+        touch ${path.module}/master_join_command.txt
       fi
     EOT
   }

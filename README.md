@@ -22,7 +22,7 @@ NOTE: If you need any of the not supported features you can allways submit a pul
 Add to your terraform file the following:
 ```bash
 module "cluster" {             
-  source = "git::https://gitlab.com/webcloudpower/hetzner_cluster.git?ref=0.2.0"
+  source = "git::https://gitlab.com/webcloudpower/hetzner_cluster.git?ref=0.2.1"
     
   hcloud_token       = "MY_HETZNER_TOKEN"
   kubernetes_version = "1.19.15"  
