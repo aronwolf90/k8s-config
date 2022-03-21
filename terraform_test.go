@@ -16,6 +16,7 @@ import (
 
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/stretchr/testify/assert"
+  "github.com/hetznercloud/hcloud-go/hcloud"
 )
 
 func CreateDeployment(clientset *kubernetes.Clientset) {
@@ -150,31 +151,72 @@ func CreateClientset(host string, token string) *kubernetes.Clientset {
   return clientset
 }
 
-func TestTerraform(t *testing.T) {
+func ChangeWorkerNodeType(t *testing.T) {
 	terraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
 		TerraformDir: ".",
+		Vars: map[string]interface{} {
+		  "worker_node_type": "CPX11",
+		},
 	})
+	terraform.Apply(t, terraformOptions)
+}
 
-	defer terraform.Destroy(t, terraformOptions)
+func GetWorkerNodeType(hcloudToken string) string {
+  client := hcloud.NewClient(hcloud.WithToken(hcloudToken))
 
-	terraform.InitAndApply(t, terraformOptions)
+  servers, err := client.Server.All(context.Background())
+	var server *hcloud.Server
+  if err != nil {
+		panic(err)
+  }
+  if servers != nil {
+    regex := regexp.MustCompile("pool.+")
+    for _, localServer := range servers {
+		  if regex.MatchString(localServer.Name) {
+			  server = localServer
+			}
+		}
+    return server.ServerType.Name
+  } else {
+		panic("Server not found")
+  }
+}
 
-	outputToken := terraform.Output(t, terraformOptions, "token")
-	assert.Regexp(t, regexp.MustCompile(`.+`), outputToken)
+func TestTerraform(t *testing.T) {
+  terraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
+    TerraformDir: ".",
+  })
 
-	outputHost := terraform.Output(t, terraformOptions, "host")
-	assert.Regexp(t, regexp.MustCompile(`.+`), outputHost)
+  defer terraform.Destroy(t, terraformOptions)
+
+  terraform.InitAndApply(t, terraformOptions)
+
+  outputToken := terraform.Output(t, terraformOptions, "token")
+  assert.Regexp(t, regexp.MustCompile(`.+`), outputToken)
+
+  outputHost := terraform.Output(t, terraformOptions, "host")
+  assert.Regexp(t, regexp.MustCompile(`.+`), outputHost)
 
   outputMasterNodes := terraform.OutputMapOfObjects(t, terraformOptions, "master_nodes")
-	assert.Regexp(t, regexp.MustCompile(`.+`), outputMasterNodes["master"].(map[string]interface {})["ipv4_address"])
+  assert.Regexp(t, regexp.MustCompile(`.+`), outputMasterNodes["master"].(map[string]interface {})["ipv4_address"])
+
+  outputHcloudToken := terraform.Output(t, terraformOptions, "hcloud_token")
+  assert.Regexp(t, regexp.MustCompile(`.+`), outputHcloudToken)
 
   clientset := CreateClientset(outputHost, outputToken)
   CheckNodes(clientset)
-	CreateDeployment(clientset)
+  CreateDeployment(clientset)
   CheckDeployment(clientset)
   ScaleMasterNodesUp(t)
-	RemoveMasterNode(t)
+  RemoveMasterNode(t)
   CheckDeployment(clientset)
+  ChangeWorkerNodeType(t)
+  clientset   = CreateClientset(
+    terraform.Output(t, terraformOptions, "host"),
+    terraform.Output(t, terraformOptions, "token"),
+  )
+  CheckNodes(clientset)
+  assert.Equal(t, GetWorkerNodeType(outputHcloudToken), "cpx11")
 }
 
 func TestTerraformWithMultipleInitialMasters(t *testing.T) {

@@ -22,11 +22,12 @@ NOTE: If you need any of the not supported features you can allways submit a pul
 Add to your terraform file the following:
 ```bash
 module "cluster" {             
-  source = "git::https://gitlab.com/webcloudpower/hetzner_cluster.git?ref=0.2.1"
+  source = "git::https://gitlab.com/webcloudpower/hetzner_cluster.git?ref=0.3.0"
     
   hcloud_token       = "MY_HETZNER_TOKEN"
   kubernetes_version = "1.19.15"  
   location           = "fsn1" 
+  worker_node_type   = "CPX21" 
   # The variable is used to specify what master node
   # to use to get a join token.
   main_master_name   = "master" 
@@ -43,13 +44,14 @@ The module assumes that you have your public key in `~/.ssh/id_rsa.pub`. Once yo
 * `host`: Api url. 
 * `master_nodes`: Configuration of the master nodes.
   * `ip4`: The ip4 address of the master node
+* `hcloud_token`: The hetzner token.
 
 ## Min costs
 * Master node (CX21): 2CPU and 4GB -> 5,83 EUR
-* Worker node (CPX11): 2CPU and 2GB -> 4,75 EUR
+* Worker node (CPX21): 2CPU and 4GB -> 5,83 EUR
 * Load balancer (LB11) -> 5,83 EUR
 
-This is at the moment of writing 16,41 EUR per month.
+This is at the moment of writing 17,49 EUR per month.
 
 NOTE: Comparing to GCloud, it is 3 times cheaper for the first cluster and 5 times cheaper for the second cluster (For the first cluster GCloud does not charge for the master node).
 

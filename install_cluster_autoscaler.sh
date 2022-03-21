@@ -175,7 +175,7 @@ spec:
             - ./cluster-autoscaler
             - --cloud-provider=hetzner
             - --stderrthreshold=info
-            - --nodes=1:10:CPX11:$LOCATION:pool1
+            - --nodes=1:10:$WORKER_SERVER_TYPE:$LOCATION:pool1
           env:
           - name: HCLOUD_TOKEN
             value: "$HCLOUD_TOKEN"

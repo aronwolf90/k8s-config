@@ -37,6 +37,10 @@ variable "main_master_name" {
   default = "master"
 }
 
+variable "worker_node_type" {
+  default = "CPX21"
+}
+
 provider "hcloud" {
   token = var.hcloud_token
 }
@@ -147,6 +151,7 @@ resource "null_resource" "setup_master" {
   triggers = {
     server_id          = each.value.id
     kubernetes_version = var.kubernetes_version
+    worker_node_type   = var.worker_node_type
   }
 
   connection {
@@ -198,6 +203,7 @@ resource "null_resource" "setup_master" {
       "export SSH_KEY=${hcloud_ssh_key.default.id}",
       "export LOCATION=${var.location}",
       "export KUBERNETES_VERSION=${var.kubernetes_version}",
+      "export WORKER_SERVER_TYPE=${var.worker_node_type}",
       "if [ ${var.main_master_name} != ${each.key} ]; then export MASTER_JOIN_COMMAND=\"$(cat /tmp/master_join_command.txt)\"; fi",
       "bash /tmp/install_master.sh",
     ]
@@ -226,4 +232,8 @@ output "master_nodes" {
   value = {
     for key, node in hcloud_server.master : key => { ipv4_address = node.ipv4_address }
   }
+}
+
+output "hcloud_token" {
+  value = var.hcloud_token
 }
