@@ -176,7 +176,11 @@ func GetWorkerNodeType(hcloudToken string) string {
 			  server = localServer
 			}
 		}
-    return server.ServerType.Name
+    if server == nil {
+      return ""
+    } else {
+      return server.ServerType.Name
+    }
   } else {
 		panic("Server not found")
   }
@@ -210,6 +214,8 @@ func TestTerraform(t *testing.T) {
   ScaleMasterNodesUp(t)
   RemoveMasterNode(t)
   CheckDeployment(clientset)
+  time.Sleep(time.Second * 10)
+  assert.Equal(t, GetWorkerNodeType(outputHcloudToken), "cx21")
   ChangeWorkerNodeType(t)
   clientset   = CreateClientset(
     terraform.Output(t, terraformOptions, "host"),

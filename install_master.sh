@@ -38,12 +38,13 @@ bash /tmp/install_cluster_autoscaler.sh
 
 SERVERS=$(
   kubectl get nodes -o json |
-  jq -r "[.items[] | select(.status.nodeInfo.kubeletVersion != \"v$KUBERNETES_VERSION\")]"
+    jq -r "[.items[] | select((.metadata.labels.\"beta.kubernetes.io/instance-type\" != \"$(echo "$WORKER_SERVER_TYPE" | tr "[:upper:]" "[:lower:]")\" or .status.nodeInfo.kubeletVersion != \"v$KUBERNETES_VERSION\") and (.metadata.name|test(\"pool.*\")))]"
 )
 
 for SERVER in $(echo "$SERVERS" | jq -r '.[] | @base64'); do
   NAME=$(echo "$SERVER" | base64 --decode | jq -r '.metadata.name')
   ID=$(echo "$SERVER" | base64 --decode | jq -r '.metadata.annotations."csi.volume.kubernetes.io/nodeid"' | sed 's/[^0-9]*//g')
+
   kubectl drain "$NAME" --delete-local-data --ignore-daemonsets
   sleep 30
   curl -X DELETE -H "Authorization: Bearer $HCLOUD_TOKEN" "https://api.hetzner.cloud/v1/servers/$ID"
