@@ -196,4 +196,4 @@ spec:
             path: "/etc/ssl/certs/ca-certificates.crt"
 EOF
 
-kubectl apply -f /tmp/cluster_autoscaler.yml
+kubectl apply -f /tmp/cluster_autoscaler.yml --wait
