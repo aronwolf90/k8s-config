@@ -1,0 +1,15 @@
+- hosts: localhost
+  become: yes
+
+  tasks:
+    - name: Config
+      shell: bash master_config.sh
+    - name: Get worker nodes that need to be restarted
+      command: bash get_worker_nodes_need_restart.sh
+      register: worker_nodes_to_restart
+    - name: Print variable
+      debug:
+        msg: "{{ worker_nodes_to_restart.stdout | from_json}}"
+    - name: Restart worker nodes
+      shell: "NAME={{ item.name }} ID={{ item.id }} bash restart_worker_node.sh"
+      with_items: "{{ worker_nodes_to_restart.stdout | from_json}}"

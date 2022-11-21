@@ -1,0 +1,14 @@
+- hosts: localhost
+  become: yes
+
+  tasks:
+    - name: install kubeadm
+      shell: bash install_kubeadm.sh
+    - name: install master
+      shell: bash install_master.sh
+    - name: ssh keys
+      loop: "{{ ssh_keys }}"
+      authorized_key:
+        user: root
+        state: present
+        key: "{{ item }}"

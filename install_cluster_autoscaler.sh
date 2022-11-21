@@ -3,8 +3,8 @@
 set -e
 
 # shellcheck disable=SC2002
-cat /tmp/install_kubedm.sh | sed "s/\$KUBERNETES_VERSION/$KUBERNETES_VERSION/g" > /tmp/install_node_kubedm.sh
-kubeadm token create --ttl 0 --print-join-command >> /tmp/install_node_kubedm.sh
+cat /tmp/install_kubeadm.sh | sed "s/\$KUBERNETES_VERSION/$KUBERNETES_VERSION/g" > /tmp/install_node_kubeadm.sh
+kubeadm token create --ttl 0 --print-join-command >> /tmp/install_node_kubeadm.sh
 
 # shellcheck disable=SC2002
 cat <<EOF | tee /tmp/cluster_autoscaler.yml
@@ -180,7 +180,7 @@ spec:
           - name: HCLOUD_TOKEN
             value: "$HCLOUD_TOKEN"
           - name: HCLOUD_CLOUD_INIT
-            value: "$(cat /tmp/install_node_kubedm.sh | base64 -w 0)"
+            value: "$(cat /tmp/install_node_kubeadm.sh | base64 -w 0)"
           - name: HCLOUD_SSH_KEY
             value: "$SSH_KEY" 
 #          - name: HCLOUD_NETWORK
@@ -189,7 +189,6 @@ spec:
             - name: ssl-certs
               mountPath: /etc/ssl/certs/ca-certificates.crt
               readOnly: true
-          imagePullPolicy: "Always"
       volumes:
         - name: ssl-certs
           hostPath:
@@ -197,3 +196,4 @@ spec:
 EOF
 
 kubectl apply -f /tmp/cluster_autoscaler.yml --wait
+sleep 30

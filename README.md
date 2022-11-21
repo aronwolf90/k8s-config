@@ -1,25 +1,33 @@
 # Hetzner cluster
 
-It is a terraform module that allow to deploy a kubedm based cluster on hetzner easily:
+It is a terraform module that allow to deploy a kubeadm based cluster on hetzner easily:
 
 It supports the following features:
 - Setup a full working k8s in a few minutes.
-- Autostaling of worker nodes.
+- Autoscaling of worker nodes.
 - Upgrade the k8s version by just chaning the version number.
 - Volumes (using Hetzner volumes)
 - Loadbalancers (USings Hetzner load balancers)
 
-## Porpuse of this cluster
+## Purpose of this cluster
 This cluster is thought for personal projects and small companies. This traduces in:
 - Using hetzner because it is very cheap.
 - Use one master instead of many and let stuff like etcd on the master node.
 - Not support multi zone clusters. For small to medium project it is most of the time enough to have backups or wait that the
   hardware failure (that happen very unfrecuently) is fixed by hetzner instead of paying for more redundancy.
 
-NOTE: If you need any of the not supported features you can allways submit a pull request.
+NOTE: If you need any of the not supported features you can always submit a pull request.
 
 ## Usage
 Add to your terraform file the following:
+```bash
+module "cluster" {             
+  source = "git::https://gitlab.com/webcloudpower/hetzner_cluster.git?ref=0.3.1"
+    
+  hcloud_token       = "MY_HETZNER_TOKEN"
+```
+
+Or if you want to avoid default values, use this:
 ```bash
 module "cluster" {             
   source = "git::https://gitlab.com/webcloudpower/hetzner_cluster.git?ref=0.3.1"
@@ -32,7 +40,11 @@ module "cluster" {
   # to use to get a join token.
   main_master_name   = "master" 
   master_nodes       = [ 
-    { name = "master",  image="ubuntu-20.04" }
+    { name = "master",  image = "ubuntu-20.04" }
+  ]
+  private_key        = "~/.ssh/id_rsa" 
+  ssh_public_keys    = [
+    { name = "default", key = file("~/.ssh/id_rsa.pub") }
   ]
 }
 ```
