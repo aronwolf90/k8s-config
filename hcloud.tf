@@ -99,7 +99,7 @@ resource "null_resource" "clean" {
     when = destroy
     command = <<EOT
       export HCLOUD_TOKEN=${self.triggers.hcloud_token}
-      bash delete_worder_nodes.sh
+      bash ${path.module}/delete_worder_nodes.sh
     EOT
   }
 }

@@ -25,6 +25,7 @@ module "cluster" {
   source = "git::https://gitlab.com/webcloudpower/hetzner_cluster.git?ref=0.3.1"
     
   hcloud_token       = "MY_HETZNER_TOKEN"
+}
 ```
 
 Or if you want to avoid default values, use this:
