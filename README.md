@@ -22,7 +22,7 @@ NOTE: If you need any of the not supported features you can always submit a pull
 Add to your terraform file the following:
 ```bash
 module "cluster" {             
-  source = "git::https://gitlab.com/webcloudpower/hetzner_cluster.git?ref=0.3.1"
+  source = "git::https://gitlab.com/webcloudpower/hetzner_cluster.git?ref=0.5.0"
     
   hcloud_token       = "MY_HETZNER_TOKEN"
 }
@@ -31,17 +31,17 @@ module "cluster" {
 Or if you want to avoid default values, use this:
 ```bash
 module "cluster" {             
-  source = "git::https://gitlab.com/webcloudpower/hetzner_cluster.git?ref=0.3.1"
+  source = "git::https://gitlab.com/webcloudpower/hetzner_cluster.git?ref=0.5.0"
     
-  hcloud_token       = "MY_HETZNER_TOKEN"
-  kubernetes_version = "1.19.15"  
-  location           = "fsn1" 
-  worker_node_type   = "CPX21" 
+  hcloud_token                  = "MY_HETZNER_TOKEN"
+  kubernetes_version            = "1.19.15"  
+  worker_node_type              = "CPX21" 
+  master_load_balancer_location = "fsn1"
   # The variable is used to specify what master node
   # to use to get a join token.
   main_master_name   = "master" 
   master_nodes       = [ 
-    { name = "master",  image = "ubuntu-20.04" }
+    { name = "master",  image = "ubuntu-20.04", location = "fsn1" }
   ]
   private_key        = "~/.ssh/id_rsa" 
   ssh_public_keys    = [

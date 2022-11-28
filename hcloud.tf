@@ -21,17 +21,17 @@ resource "hcloud_server" "master" {
   for_each = local.transformed_master_nodes
 
   name        = each.key
-  image       = "ubuntu-20.04"
+  image       = each.value.image
   server_type = "cx21"
+  location    = each.value.location
   ssh_keys    = [for _, public_ssh_value in hcloud_ssh_key.ssh_public_keys : public_ssh_value.id]
-  location    = var.location
 }
 
 resource "hcloud_load_balancer" "master" {
   name               = "master"
   load_balancer_type = "lb11"
   depends_on         = [hcloud_server.master]
-  location           = var.location
+  location           = var.master_load_balancer_location
 }
 
 resource "hcloud_load_balancer_target" "master" {
@@ -171,8 +171,7 @@ resource "null_resource" "setup_master" {
       "export HCLOUD_TOKEN=${var.hcloud_token}",
       "export LOAD_BALANCER_IP=${hcloud_load_balancer.master.ipv4}",
       "export SSH_KEY=${hcloud_ssh_key.ssh_public_keys[local.worker_public_ssh_key].id}",
-      "echo $SSH_KEY",
-      "export LOCATION=${var.location}",
+      "export LOCATION=${var.worker_node_location}",
       "export KUBERNETES_VERSION=${var.kubernetes_version}",
       "export WORKER_SERVER_TYPE=${var.worker_node_type}",
       "if [ ${var.main_master_name} != ${each.key} ]; then export MASTER_JOIN_COMMAND=\"$(cat /tmp/master_join_command.txt)\"; fi",
@@ -233,8 +232,7 @@ resource "null_resource" "config_master" {
       "export HCLOUD_TOKEN=${var.hcloud_token}",
       "export LOAD_BALANCER_IP=${hcloud_load_balancer.master.ipv4}",
       "export SSH_KEY=${hcloud_ssh_key.ssh_public_keys[local.worker_public_ssh_key].id}",
-      "echo $SSH_KEY",
-      "export LOCATION=${var.location}",
+      "export LOCATION=${var.worker_node_location}",
       "export KUBERNETES_VERSION=${var.kubernetes_version}",
       "export WORKER_SERVER_TYPE=${var.worker_node_type}",
       "apt update -y && apt install ansible -y",

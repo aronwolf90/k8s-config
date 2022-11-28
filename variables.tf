@@ -1,23 +1,24 @@
 variable "hcloud_token" {}
 
-variable "location" {
-  default = "hel1"
-}
-
 variable "kubernetes_version" {
   default = "1.19.16"
+}
+
+variable "master_load_balancer_location" {
+  default = "fsn1"
 }
 
 variable "master_nodes" {
   type = list(
     object({
-      name  = string
-      image = string
+      name     = string
+      image    = string
+      location = string
     })
   )
 
   default = [
-    { name = "master", image = "ubuntu-20.04" },
+    { name = "master", image = "ubuntu-20.04", location = "fsn1" },
   ]
 }
 
@@ -27,6 +28,10 @@ variable "main_master_name" {
 
 variable "worker_node_type" {
   default = "CPX21"
+}
+
+variable "worker_node_location" {
+  default = "fsn1"
 }
 
 variable "ssh_public_keys" {
