@@ -1,7 +1,7 @@
 variable "hcloud_token" {}
 
 variable "kubernetes_version" {
-  default = "1.19.16"
+  default = "1.21.14"
 }
 
 variable "master_load_balancer_location" {
@@ -52,5 +52,19 @@ variable "worker_public_ssh_key" {
 }
 
 variable "private_key" {
+  type = string
+
   default = "~/.ssh/id_rsa"
+}
+
+variable "node_pools" {
+  type = list(
+    object({
+      name      = string
+      node_type = string
+      location  = string
+    })
+  )
+  
+  default = [{ name = "pool", node_type = "CPX21", location = "fsn1" }]
 }

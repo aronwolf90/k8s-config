@@ -4,6 +4,7 @@ import (
   "context"
   "fmt"
   "regexp"
+  "strings"
 	"testing"
   "time"
 
@@ -63,6 +64,39 @@ func CreateDeployment(clientset *kubernetes.Clientset) {
 	fmt.Printf("Created deployment %q.\n", result.GetObjectMeta().GetName())
 }
 
+func createPod(clientset *kubernetes.Clientset, name string, region string) {
+  podsClient := clientset.CoreV1().Pods(apiv1.NamespaceDefault)
+	pod := &apiv1.Pod{
+    ObjectMeta: metav1.ObjectMeta{
+      Name: name,
+    },
+    Spec: apiv1.PodSpec{
+      Containers: []apiv1.Container{
+        {
+          Name:  "nginx",
+          Image: "nginx",
+          Ports: []apiv1.ContainerPort{
+            {
+              Name:          "http",
+              Protocol:      apiv1.ProtocolTCP,
+              ContainerPort: 80,
+            },
+          },
+        },
+      },
+      NodeSelector: map[string]string{
+        "topology.kubernetes.io/region": region,
+      },
+    },
+  }
+	fmt.Println("Creating pod...")
+	result, err := podsClient.Create(context.TODO(), pod, metav1.CreateOptions{})
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("Created pod %q.\n", result.GetObjectMeta().GetName())
+}
+
 func CheckDeployment(clientset *kubernetes.Clientset) {
   pods, err := clientset.CoreV1().Pods("default").List(context.TODO(), metav1.ListOptions{})
   if err != nil {
@@ -88,25 +122,30 @@ func CheckDeployment(clientset *kubernetes.Clientset) {
   }
 }
 
-func CheckNodes(clientset *kubernetes.Clientset) {
+func checkNodes(clientset *kubernetes.Clientset, minCount int) {
   count := 0
   for {
-    nodes, err := clientset.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
-    if err != nil {
-      panic(err.Error())
-    }
+    nodes := getNodes(clientset)
     fmt.Printf("There are %d nodes in the cluster\n", len(nodes.Items))
     count += 1
 
-    if len(nodes.Items) > 1 {
+    if len(nodes.Items) >= minCount {
       break
     }
 
     if count > 420 {
-       panic("No worker node created")
+       panic("Not enough nodes created")
     }
 	  time.Sleep(time.Second)
   }
+}
+
+func getNodes(clientset *kubernetes.Clientset) *apiv1.NodeList {
+  nodes, err := clientset.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
+  if err != nil {
+    panic(err.Error())
+  }
+  return nodes
 }
 
 func ScaleMasterNodesUp(t *testing.T) {
@@ -226,13 +265,13 @@ func TestTerraform(t *testing.T) {
   assert.Regexp(t, regexp.MustCompile(`.+`), outputHcloudToken)
 
   clientset := CreateClientset(outputHost, token, clusterCaCertificate)
-  CheckNodes(clientset)
+  checkNodes(clientset, 2)
   CreateDeployment(clientset)
   CheckDeployment(clientset)
   assert.Equal(t, GetWorkerNodeType(outputHcloudToken), "cpx21")
 
   ChangeWorkerNodeType(t)
-  CheckNodes(clientset)
+  checkNodes(clientset, 2)
   assert.Equal(t, GetWorkerNodeType(outputHcloudToken), "cpx11")
 
   ScaleMasterNodesUp(t)
@@ -245,8 +284,8 @@ func TestTerraformWithMultipleInitialMasters(t *testing.T) {
     TerraformDir: ".",
     Vars: map[string]interface{} {
       "master_nodes": []map[string]string{
-        {"name": "master", "image": "ubuntu-20.04" },
-        {"name": "master2", "image": "ubuntu-20.04" },
+        {"name": "master", "image": "ubuntu-20.04", "location": "fsn1" },
+        {"name": "master2", "image": "ubuntu-20.04", "location": "fsn1" },
       },
     },
   })
@@ -260,7 +299,7 @@ func TestTerraformWithMultipleInitialMasters(t *testing.T) {
   clusterCaCertificate := terraform.Output(t, terraformOptions, "cluster_ca_certificate")
   clientset := CreateClientset(outputHost, token, clusterCaCertificate)
 
-  CheckNodes(clientset)
+  checkNodes(clientset, 2)
   CreateDeployment(clientset)
 }
 
@@ -296,4 +335,45 @@ func TestMultipleSshKeys(t *testing.T) {
 
   clusterCaCertificate := terraform.Output(t, terraformOptions, "cluster_ca_certificate")
   assert.Regexp(t,  regexp.MustCompile(`.+`), clusterCaCertificate)
+}
+
+func findNode(nodes *apiv1.NodeList, namePrefix string) *apiv1.Node {
+  for _, node := range nodes.Items {
+    if strings.HasPrefix(node.Labels["kubernetes.io/hostname"], namePrefix) {
+      return &node
+    }
+  }
+  
+  panic("Can not find node")
+}
+
+func TestMultiplePools(t *testing.T) {
+  terraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
+    TerraformDir: ".",
+    Vars: map[string]interface{} {
+      "node_pools": []map[string]interface{} {
+        { "name": "pool1", "node_type": "CPX21", "location": "fsn1" },
+        { "name": "pool2", "node_type": "CPX21", "location": "nbg1" },
+      },
+    },
+  })
+
+  defer terraform.Destroy(t, terraformOptions)
+
+  terraform.InitAndApply(t, terraformOptions)
+
+	outputHost := terraform.Output(t, terraformOptions, "host")
+  token := terraform.Output(t, terraformOptions, "token")
+  clusterCaCertificate := terraform.Output(t, terraformOptions, "cluster_ca_certificate")
+  clientset := CreateClientset(outputHost, token, clusterCaCertificate)
+  createPod(clientset, "fsn1", "fsn1")
+  createPod(clientset, "nbg1", "nbg1")
+  checkNodes(clientset, 3)
+	time.Sleep(time.Second * 3)
+  nodes := getNodes(clientset) 
+  assert.Equal(t, len(nodes.Items), 3)
+  pool1WorkerNode := findNode(nodes, "pool1") 
+  assert.Equal(t, pool1WorkerNode.Labels["topology.kubernetes.io/region"], "fsn1")
+  pool2WorkerNode := findNode(nodes, "pool2") 
+  assert.Equal(t, pool2WorkerNode.Labels["topology.kubernetes.io/region"], "nbg1")
 }

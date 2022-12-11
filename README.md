@@ -34,7 +34,7 @@ module "cluster" {
   source = "git::https://gitlab.com/webcloudpower/hetzner_cluster.git?ref=0.5.0"
     
   hcloud_token                  = "MY_HETZNER_TOKEN"
-  kubernetes_version            = "1.19.15"  
+  kubernetes_version            = "1.21.14"
   worker_node_type              = "CPX21" 
   master_load_balancer_location = "fsn1"
   # The variable is used to specify what master node
@@ -46,6 +46,11 @@ module "cluster" {
   private_key        = "~/.ssh/id_rsa" 
   ssh_public_keys    = [
     { name = "default", key = file("~/.ssh/id_rsa.pub") }
+  ]
+  # The nodes pools are created using cluster-autoscaler. This has as a consecuence that 
+  # there can be node pools without any node, if there are not enough pods.
+  node_pools         = [
+    { name = "pool", node_type = "CPX21", location = "fsn1" }
   ]
 }
 ```

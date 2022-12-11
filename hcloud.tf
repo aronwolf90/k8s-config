@@ -124,10 +124,6 @@ resource "null_resource" "setup_master" {
     destination = "/tmp/install_kubeadm.sh"
   }
   provisioner "file" {
-    source      = "${path.module}/install_cluster_autoscaler.sh"
-    destination = "/tmp/install_cluster_autoscaler.sh"
-  }
-  provisioner "file" {
     source      = "${path.module}/install_master.sh"
     destination = "/tmp/install_master.sh"
   }
@@ -173,7 +169,6 @@ resource "null_resource" "setup_master" {
       "export SSH_KEY=${hcloud_ssh_key.ssh_public_keys[local.worker_public_ssh_key].id}",
       "export LOCATION=${var.worker_node_location}",
       "export KUBERNETES_VERSION=${var.kubernetes_version}",
-      "export WORKER_SERVER_TYPE=${var.worker_node_type}",
       "if [ ${var.main_master_name} != ${each.key} ]; then export MASTER_JOIN_COMMAND=\"$(cat /tmp/master_join_command.txt)\"; fi",
       "apt update -y && apt install ansible -y",
       "ansible-playbook /tmp/master_setup.yml --extra-vars=\"{ ssh_keys: ['${join("','",local.public_ssh_key_list)}'] }\"",
@@ -188,7 +183,7 @@ resource "null_resource" "config_master" {
 
   triggers = {
     kubernetes_version = var.kubernetes_version
-    worker_node_type   = var.worker_node_type
+    node_pools = jsonencode(var.node_pools)
   }
 
   connection {
@@ -203,7 +198,10 @@ resource "null_resource" "config_master" {
     destination = "/tmp/install_kubeadm.sh"
   }
   provisioner "file" {
-    source      = "${path.module}/install_cluster_autoscaler.sh"
+    content     = templatefile(
+                    "${path.module}/install_cluster_autoscaler.sh.tftpl",
+                    { node_pools = var.node_pools }
+                  )
     destination = "/tmp/install_cluster_autoscaler.sh"
   }
   provisioner "file" {
@@ -234,7 +232,6 @@ resource "null_resource" "config_master" {
       "export SSH_KEY=${hcloud_ssh_key.ssh_public_keys[local.worker_public_ssh_key].id}",
       "export LOCATION=${var.worker_node_location}",
       "export KUBERNETES_VERSION=${var.kubernetes_version}",
-      "export WORKER_SERVER_TYPE=${var.worker_node_type}",
       "apt update -y && apt install ansible -y",
       "ansible-playbook /tmp/master_config.yml",
     ]
