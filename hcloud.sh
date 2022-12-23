@@ -81,5 +81,5 @@ spec:
                   name: hcloud
                   key: token
             - name: HCLOUD_LOAD_BALANCERS_LOCATION
-              value: $LOCATION
+              value: $LOAD_BALANCER_LOCATION}
 EOF

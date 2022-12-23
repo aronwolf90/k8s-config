@@ -153,8 +153,8 @@ func ScaleMasterNodesUp(t *testing.T) {
 		TerraformDir: ".",
 		Vars: map[string]interface{} {
 		  "master_nodes": []map[string]string{
-			  {"name": "master", "image": "ubuntu-20.04" },
-			  {"name": "master2", "image": "ubuntu-20.04" },
+        {"name": "master", "image": "ubuntu-20.04", "location": "fsn1" },
+        {"name": "master2", "image": "ubuntu-20.04", "location": "fsn1" },
 			},
 		},
 	})
@@ -166,7 +166,7 @@ func ScaleMasterNodesUp(t *testing.T) {
 func RemoveMasterNode(t *testing.T) map[string]interface{} {
   variables := map[string]interface{} {
 	  "master_nodes": []map[string]string{
-		  {"name": "master2", "image": "ubuntu-20.04" },
+      {"name": "master2", "image": "ubuntu-20.04", "location": "fsn1" },
 		},
     "main_master_name": "master2",
 	}
@@ -199,7 +199,9 @@ func ChangeWorkerNodeType(t *testing.T) {
 	terraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
 		TerraformDir: ".",
 		Vars: map[string]interface{} {
-		  "worker_node_type": "CPX11",
+      "node_pools": []map[string]interface{} {
+        { "name": "pool", "node_type": "CPX11", "location": "fsn1" },
+      },
 		},
 	})
 	terraform.Apply(t, terraformOptions)
@@ -245,7 +247,7 @@ func TestTerraform(t *testing.T) {
     TerraformDir: ".",
   })
 
-  // defer terraform.Destroy(t, terraformOptions)
+  defer terraform.Destroy(t, terraformOptions)
 
   terraform.InitAndApply(t, terraformOptions)
 

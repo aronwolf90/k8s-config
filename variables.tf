@@ -8,6 +8,10 @@ variable "master_load_balancer_location" {
   default = "fsn1"
 }
 
+variable "load_balancer_location" {
+  default = "fsn1"
+}
+
 variable "master_nodes" {
   type = list(
     object({
@@ -24,14 +28,6 @@ variable "master_nodes" {
 
 variable "main_master_name" {
   default = "master"
-}
-
-variable "worker_node_type" {
-  default = "CPX21"
-}
-
-variable "worker_node_location" {
-  default = "fsn1"
 }
 
 variable "ssh_public_keys" {
