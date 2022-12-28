@@ -22,7 +22,7 @@ NOTE: If you need any of the not supported features you can always submit a pull
 Add to your terraform file the following:
 ```bash
 module "cluster" {             
-  source = "git::https://gitlab.com/webcloudpower/hetzner_cluster.git?ref=0.6.1"
+  source = "git::https://gitlab.com/webcloudpower/hetzner_cluster.git?ref=0.7.0"
     
   hcloud_token       = "MY_HETZNER_TOKEN"
 }
@@ -31,7 +31,7 @@ module "cluster" {
 Or if you want to avoid default values, use this:
 ```bash
 module "cluster" {             
-  source = "git::https://gitlab.com/webcloudpower/hetzner_cluster.git?ref=0.6.1"
+  source = "git::https://gitlab.com/webcloudpower/hetzner_cluster.git?ref=0.7.0"
     
   hcloud_token                  = "MY_HETZNER_TOKEN"
   kubernetes_version            = "1.21.14"
