@@ -20,6 +20,9 @@ else
   sudo systemctl restart kubelet
 fi
 
+sed -e "s/- --bind-address=127.0.0.1/- --bind-address=0.0.0.0/" -i /etc/kubernetes/manifests/kube-controller-manager.yaml
+sed -e "s/- --bind-address=127.0.0.1/- --bind-address=0.0.0.0/" -i /etc/kubernetes/manifests/kube-scheduler.yaml
+
 mkdir -p "$HOME/.kube"
 sudo cp /etc/kubernetes/admin.conf "$HOME/.kube/config"
 sudo chown "$(id -u)":"$(id -g)" "$HOME/.kube/config"
