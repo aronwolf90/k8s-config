@@ -1,8 +1,0 @@
-- hosts: localhost
-  become: yes
-
-  tasks:
-    - name: install kubeadm
-      shell: bash install_kubeadm.sh
-    - name: install master
-      shell: bash install_master.sh

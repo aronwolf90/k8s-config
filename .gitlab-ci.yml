@@ -1,17 +1,20 @@
-include:
-  - template: Terraform/Base.latest.gitlab-ci.yml
-
-stages:
-  - validate
-
 fmt:
-  extends: .terraform:fmt
+  image: registry.gitlab.com/webcloudpower/hetzner_cluster
+  script:
+    - terraform init
+    - terraform fmt
 
 validate:
-  extends: .terraform:validate
-
-shell check:
-  image: koalaman/shellcheck-alpine:stable
-  stage: validate
+  image: registry.gitlab.com/webcloudpower/hetzner_cluster
   script:
-    - shellcheck $(find . -name '*.sh')
+    - terraform init
+    - terraform fmt
+
+test:
+  image: registry.gitlab.com/webcloudpower/hetzner_cluster
+  script:
+    - mkdir -p ~/.ssh
+    - cp test/unit/fixtures/ssh_host_first_key ~/.ssh/id_rsa
+    - cp test/unit/fixtures/ssh_host_first_key.pub ~/.ssh/id_rsa.pub
+    - cd test/unit
+    - go test ./...

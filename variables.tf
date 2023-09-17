@@ -1,66 +1,42 @@
 variable "hcloud_token" {}
 
-variable "kubernetes_version" {
-  default = "1.21.14"
+variable "k0s_version" {
+  default = "v1.21.14+k0s.0"
 }
 
-variable "master_load_balancer_location" {
-  default = "fsn1"
-}
-
-variable "load_balancer_location" {
-  default = "fsn1"
-}
-
-variable "master_nodes" {
+# When no public key is specifed, it uses "/.ssh/id_rsa.pub"
+# For more details see `locals.tf`.
+variable "public_ssh_keys" {
   type = list(
     object({
-      name     = string
-      image    = string
-      location = string
-    })
-  )
-
-  default = [
-    { name = "master", image = "ubuntu-20.04", location = "fsn1" },
-  ]
-}
-
-variable "main_master_name" {
-  default = "master"
-}
-
-variable "ssh_public_keys" {
-  type = list(
-    object({
-      name  = string
-      key = string
+      name = string
+      key  = string
     })
   )
 
   default = null
 }
 
-variable "worker_public_ssh_key" {
-  type = string
-
-  default = null
-}
-
-variable "private_key" {
+variable "private_ssh_key_path" {
   type = string
 
   default = "~/.ssh/id_rsa"
 }
 
-variable "node_pools" {
+variable "nodes" {
   type = list(
     object({
-      name      = string
-      node_type = string
-      location  = string
+      name        = string
+      image       = string
+      location    = string
+      server_type = string
+      role        = string
     })
   )
-  
-  default = [{ name = "pool", node_type = "CPX21", location = "fsn1" }]
+
+  default = [
+    { name = "controller1", image = "ubuntu-22.04", location = "fsn1", server_type = "cx21", role = "controller+worker" },
+    { name = "controller2", image = "ubuntu-22.04", location = "fsn1", server_type = "cx21", role = "controller+worker" },
+    { name = "controller3", image = "ubuntu-22.04", location = "fsn1", server_type = "cx21", role = "controller+worker" },
+  ]
 }
