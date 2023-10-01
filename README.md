@@ -75,20 +75,14 @@ Just change `k0s_version` to the desired version and run `terraform apply`.
 * v1.27.6+k0s.0
 * v1.28.2+k0s.0
 
-# Contribute
-- Execute `git clone git@gitlab.com:webcloudpower/hetzner_cluster.git`.
+# Test
 - Create a `test/integration/terraform.tfvars` file with the following content:
   ```
   hcloud_token = <token>
   ```
-- Install:
-  * terraform
-  * kubectl
-- Execute: `terraform init`
-
-You can now test you changes by executing `terraform apply` or `go test -run ` inside test/integration.
-
-**NOTE**: You can also use `docker-compose run bash` and execute all commands there.
+- Execute:
+  * For integration test: `docker-compose run bash -c test/integration && go test -run TestTerraform`.
+  * For unit test: `docker-compose run bash -c test/unit && go test`.
 
 # TODOs
 * Remove the need to have an installed `kubectl`. 

@@ -22,3 +22,8 @@ output "hcloud_token" {
   value = var.hcloud_token
   sensitive = true
 }
+
+output "kubeconfig" {
+  value = local.kubeconfig
+  sensitive = true
+}

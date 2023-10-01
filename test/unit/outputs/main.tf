@@ -3,4 +3,5 @@ locals {
   cluster_ca_certificate = "certificate-authority-data-test"
   client_certificate     = "client-certificate-data-test"
   client_key             = "client-key-data-test"
+  kubeconfig             = "kubeconfig"
 }
