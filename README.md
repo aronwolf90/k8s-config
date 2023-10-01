@@ -17,7 +17,7 @@ This cluster is thought for personal projects and small companies that need HA. 
 Add to your terraform file the following:
 ```bash
 module "cluster" {             
-  source = "git::https://gitlab.com/webcloudpower/hetzner_cluster.git?ref=0.8.0"
+  source = "git::https://gitlab.com/webcloudpower/hetzner_cluster.git?ref=0.8.1"
     
   hcloud_token = "MY_HETZNER_TOKEN"
 }
@@ -26,7 +26,7 @@ module "cluster" {
 Or if you want to avoid default values, use this:
 ```bash
 module "cluster" {             
-  source = "git::https://gitlab.com/webcloudpower/hetzner_cluster.git?ref=0.8.0"
+  source = "git::https://gitlab.com/webcloudpower/hetzner_cluster.git?ref=0.8.1"
     
   hcloud_token         = "MY_HETZNER_TOKEN"
   k0s_version          = "v1.21.14+k0s.0"

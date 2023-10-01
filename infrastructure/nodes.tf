@@ -42,6 +42,14 @@ resource "null_resource" "nodes" {
     private_key = file(self.triggers.private_ssh_key_path)
   }
 
+  # Restic need the folder on this location to make it work 
+  provisioner "remote-exec" {
+    inline = [
+      "mkdir -p /var/lib/kubelet/",
+      "ln -s /var/lib/k0s/kubelet/pods/ /var/lib/kubelet/pods"
+    ]
+  }
+
   provisioner "remote-exec" {
     when = destroy
     inline = [
