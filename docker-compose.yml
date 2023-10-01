@@ -2,5 +2,6 @@ version: '3.8'
 services:
   app:
     build: .
+    image: registry.gitlab.com/webcloudpower/hetzner_cluster
     volumes:
       - .:/app
