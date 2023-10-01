@@ -3,5 +3,4 @@
 *.tfstate.backup
 .terraform.lock.hcl
 .terraform/
-backups/*
-master_join_command.txt
+config/tmp/kubeconfig
