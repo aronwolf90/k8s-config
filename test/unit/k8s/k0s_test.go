@@ -23,14 +23,17 @@ func TestK0s(t *testing.T) {
         map[string]string{
           "ipv4": "127.0.0.1",
           "role": "controller+worker",
+          "name": "controller1",
         },
         map[string]string{
           "ipv4": "127.0.0.2",
           "role": "controller+worker",
+          "name": "controller2",
         },
         map[string]string{
           "ipv4": "127.0.0.3",
           "role": "controller+worker",
+          "name": "controller3",
         },
       },
     },
@@ -75,14 +78,17 @@ func TestK0sV1_21_14_k0s_0(t *testing.T) {
         map[string]string{
           "ipv4": "127.0.0.1",
           "role": "controller+worker",
+          "name": "controller1",
         },
         map[string]string{
           "ipv4": "127.0.0.2",
           "role": "controller+worker",
+          "name": "controller2",
         },
         map[string]string{
           "ipv4": "127.0.0.3",
           "role": "controller+worker",
+          "name": "controller3",
         },
       },
     },
@@ -114,14 +120,17 @@ func TestK0sV1_22_17_k0s_0(t *testing.T) {
         map[string]string{
           "ipv4": "127.0.0.1",
           "role": "controller+worker",
+          "name": "controller1",
         },
         map[string]string{
           "ipv4": "127.0.0.2",
           "role": "controller+worker",
+          "name": "controller2",
         },
         map[string]string{
           "ipv4": "127.0.0.3",
           "role": "controller+worker",
+          "name": "controller3",
         },
       },
     },
@@ -153,14 +162,17 @@ func TestK0sV1_23_17_k0s_0(t *testing.T) {
         map[string]string{
           "ipv4": "127.0.0.1",
           "role": "controller+worker",
+          "name": "controller1",
         },
         map[string]string{
           "ipv4": "127.0.0.2",
           "role": "controller+worker",
+          "name": "controller2",
         },
         map[string]string{
           "ipv4": "127.0.0.3",
           "role": "controller+worker",
+          "name": "controller3",
         },
       },
     },

@@ -36,10 +36,7 @@ module "k8s" {
   k0s_version          = var.k0s_version
   private_ssh_key_path = var.private_ssh_key_path
   load_balancer_ipv4   = module.infrastructure.load_balancer_ipv4_address
-  nodes                = [for node in var.nodes : {
-    role = node.role,
-    ipv4 = module.infrastructure.nodes[node.name].ipv4_address
-  }]
+  nodes                = module.infrastructure.nodes
 }
 
 module "config" {

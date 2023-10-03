@@ -1,0 +1,44 @@
+{
+    "load_balancer_ipv4_address": {
+        "actions": [
+            "create"
+        ],
+        "after_sensitive": false,
+        "after_unknown": true,
+        "before": null,
+        "before_sensitive": false
+    },
+    "nodes": {
+        "actions": [
+            "create"
+        ],
+        "after": [
+            {
+                "name": "controller1",
+                "role": "controller+worker"
+            },
+            {
+                "name": "controller2",
+                "role": "controller+worker"
+            },
+            {
+                "name": "controller3",
+                "role": "controller+worker"
+            }
+        ],
+        "after_sensitive": false,
+        "after_unknown": [
+            {
+                "ipv4_address": true
+            },
+            {
+                "ipv4_address": true
+            },
+            {
+                "ipv4_address": true
+            }
+        ],
+        "before": null,
+        "before_sensitive": false
+    }
+}

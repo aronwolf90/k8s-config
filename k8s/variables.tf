@@ -1,6 +1,7 @@
 variable "nodes" {
   type = list(
     object({
+      name = string
       ipv4 = string
       role = string
     })

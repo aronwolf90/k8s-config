@@ -81,7 +81,8 @@ Just change `k0s_version` to the desired version and run `terraform apply`.
   hcloud_token = <token>
   ```
 - Execute:
-  * For integration test: `docker-compose run bash -c test/integration && go test -run TestTerraform`.
+  * For integration test: `docker-compose run bash -c "cd test/integration && go test -timeout 99999s"`.
+  * For testing all supported K8s versions `docker-compose run bash -c "cd test/integration && TEST_K8S_VERSIONS=true go test -timeout 99999s"`
   * For unit test: `docker-compose run bash -c test/unit && go test`.
 
 # TODOs

@@ -5,6 +5,7 @@ import (
   "encoding/json"
   "fmt"
   "net/http"
+  "os"
   "regexp"
 	"testing"
   "time"
@@ -178,7 +179,7 @@ func CheckDeployment(clientset *kubernetes.Clientset) {
       panic(err)
     }
 
-    if pods.Items[0].Status.Phase == apiv1.PodPhase("Running")  {
+    if len(pods.Items) >= 1 && pods.Items[0].Status.Phase == apiv1.PodPhase("Running")  {
       break
     }
 
@@ -429,10 +430,16 @@ func deleteK8sResources(t *testing.T, clientset *kubernetes.Clientset, terraform
   deleteVolumes(clientset)
   deleteServices(clientset)
 
+  time.Sleep(time.Second * 10)
   terraform.Destroy(t, terraformOptions)
 }
 
 func TestTerraform(t *testing.T) {
+  if os.Getenv("TEST_K8S_VERSIONS") != "" {
+    t.Skip("Skipping TestTerraform test")
+    return
+  }
+
   terraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
     TerraformDir: ".",
   })
@@ -478,6 +485,11 @@ func TestTerraform(t *testing.T) {
 }
 
 func testK8sVersion(t *testing.T, k0sVersion string) {
+  if os.Getenv("TEST_K8S_VERSIONS") == "" {
+    t.Skip("Skipping k0s version test")
+    return
+  }
+
   terraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
     TerraformDir: ".",
     Vars: map[string]interface{} {

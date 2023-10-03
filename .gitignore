@@ -4,3 +4,4 @@
 .terraform.lock.hcl
 .terraform/
 config/tmp/kubeconfig
+.tmp

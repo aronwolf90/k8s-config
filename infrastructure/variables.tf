@@ -1,3 +1,24 @@
-variable "public_ssh_keys" {}
+variable "public_ssh_keys" {
+  type = list(
+    object({
+      name = string
+      key  = string
+    })
+  )
+
+  default = null
+}
+
 variable "private_ssh_key_path" {}
-variable "nodes" {}
+
+variable "nodes" {
+  type = list(
+    object({
+      name        = string
+      image       = string
+      location    = string
+      server_type = string
+      role        = string
+    })
+  )
+}
