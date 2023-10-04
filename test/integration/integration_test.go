@@ -184,7 +184,7 @@ func CheckDeployment(clientset *kubernetes.Clientset) {
     }
 
     if count > 60 {
-       panic("Could not create a working pod")
+      panic("Could not create a working pod")
     }
     count += 1
     time.Sleep(time.Second)
@@ -259,25 +259,12 @@ func getNodes(clientset *kubernetes.Clientset) *apiv1.NodeList {
   return nodes
 }
 
-func ScaleMasterNodesUp(t *testing.T) {
-	terraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
-		TerraformDir: ".",
-		Vars: map[string]interface{} {
-		  "master_nodes": []map[string]string{
-        {"name": "master", "image": "ubuntu-20.04", "location": "fsn1" },
-        {"name": "master2", "image": "ubuntu-20.04", "location": "fsn1" },
-			},
-		},
-	})
-	terraform.Apply(t, terraformOptions)
-	// TODO: Find a way to check every second if the master is in sycron instead of this.
-	time.Sleep(time.Second * 120)
-}
-
 func RemoveMasterNode(t *testing.T) map[string]interface{} {
   variables := map[string]interface{} {
-	  "nodes": []map[string]string{
-      { "name": "controller1", "image": "ubuntu-22.04", "location": "fsn1", "server_type": "cx21", "role": "controller+worker" },
+	  "nodes": map[string]interface{} {
+      "controller1": map[string]interface{} {
+        "image": "ubuntu-22.04", "location": "fsn1", "server_type": "cx21", "role": "controller+worker",
+      },
 		},
 	}
 
