@@ -24,9 +24,8 @@ variable "private_ssh_key_path" {
 }
 
 variable "nodes" {
-  type = list(
+  type = map(
     object({
-      name        = string
       image       = string
       location    = string
       server_type = string
@@ -34,9 +33,9 @@ variable "nodes" {
     })
   )
 
-  default = [
-    { name = "controller1", image = "ubuntu-22.04", location = "fsn1", server_type = "cx21", role = "controller+worker" },
-    { name = "controller2", image = "ubuntu-22.04", location = "fsn1", server_type = "cx21", role = "controller+worker" },
-    { name = "controller3", image = "ubuntu-22.04", location = "fsn1", server_type = "cx21", role = "controller+worker" },
-  ]
+  default = {
+    "controller1" = { image = "ubuntu-22.04", location = "fsn1", server_type = "cx21", role = "controller+worker" },
+    "controller2" = { image = "ubuntu-22.04", location = "fsn1", server_type = "cx21", role = "controller+worker" },
+    "controller3" = { image = "ubuntu-22.04", location = "fsn1", server_type = "cx21", role = "controller+worker" },
+  }
 }

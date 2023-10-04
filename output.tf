@@ -1,20 +1,20 @@
 output "host" {
-  value = local.host
+  value = module.k8s.host
   sensitive = true
 }
 
 output "cluster_ca_certificate" {
-  value = local.cluster_ca_certificate 
+  value = module.k8s.cluster_ca_certificate
   sensitive = true
 }
 
 output "client_certificate" {
-  value = local.client_certificate 
+  value = module.k8s.client_certificate
   sensitive = true
 }
 
 output "client_key" {
-  value = local.client_key 
+  value = module.k8s.client_key
   sensitive = true
 }
 
@@ -24,6 +24,6 @@ output "hcloud_token" {
 }
 
 output "kubeconfig" {
-  value = local.kubeconfig
+  value = module.k8s.kubeconfig
   sensitive = true
 }

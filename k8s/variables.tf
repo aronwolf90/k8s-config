@@ -1,12 +1,12 @@
 variable "nodes" {
-  type = list(
+  type = map(
     object({
-      name = string
-      ipv4 = string
       role = string
+      ipv4 = string
     })
   )
 }
+
 variable "load_balancer_ipv4" {
   type = string
 }

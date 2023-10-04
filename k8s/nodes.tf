@@ -1,9 +1,9 @@
 resource "null_resource" "nodes" {
-  for_each = {for node in var.nodes: node.name => node}
+  for_each = var.nodes
 
   triggers = {
     ipv4 = each.value.ipv4
-    name = each.value.name
+    name = each.key
     private_ssh_key_path = var.private_ssh_key_path
   }
 

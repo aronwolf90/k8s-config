@@ -11,7 +11,7 @@ resource "k0s_cluster" "cluster" {
   version = var.k0s_version
 
   hosts = [
-    for node in var.nodes :
+    for key, node in var.nodes :
     {
       role = node.role,
       no_taints = tonumber(join("", regex("([0-9]+).([0-9]+)", var.k0s_version))) > 122 ? true : null

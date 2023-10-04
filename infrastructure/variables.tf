@@ -12,9 +12,8 @@ variable "public_ssh_keys" {
 variable "private_ssh_key_path" {}
 
 variable "nodes" {
-  type = list(
+  type = map(
     object({
-      name        = string
       image       = string
       location    = string
       server_type = string

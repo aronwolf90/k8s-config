@@ -1,3 +1,19 @@
 output "kubeconfig" {
   value = k0s_cluster.cluster.kubeconfig
 }
+
+output "host" {
+  value = "${yamldecode(k0s_cluster.cluster.kubeconfig)["clusters"][0]["cluster"]["server"]}"
+}
+
+output "cluster_ca_certificate" {
+  value = "${base64decode(yamldecode(k0s_cluster.cluster.kubeconfig)["clusters"][0]["cluster"]["certificate-authority-data"])}"
+}
+
+output "client_certificate" {
+  value = "${base64decode(yamldecode(k0s_cluster.cluster.kubeconfig)["users"][0]["user"]["client-certificate-data"])}"
+}
+
+output "client_key" {
+  value = "${base64decode(yamldecode(k0s_cluster.cluster.kubeconfig)["users"][0]["user"]["client-key-data"])}"
+}

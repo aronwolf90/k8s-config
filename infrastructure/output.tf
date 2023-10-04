@@ -1,9 +1,5 @@
 output "nodes" {
-  value = [for node in hcloud_server.nodes: {
-    "name": node.name,
-    "ipv4_address" = node.ipv4_address,
-    "role" = {for node in var.nodes: node.name => node.role}[node.name],
-  }]
+  value = { for key, node in hcloud_server.nodes : key => merge({"ipv4" = node.ipv4_address}, var.nodes[key]) }
 }
 
 output "load_balancer_ipv4_address" {

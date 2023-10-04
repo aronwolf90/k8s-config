@@ -12,32 +12,38 @@
         "actions": [
             "create"
         ],
-        "after": [
-            {
-                "name": "controller1",
-                "role": "controller+worker"
+        "after": {
+            "controller1": {
+                "image": "ubuntu-22.04",
+                "location": "fsn1",
+                "role": "controller+worker",
+                "server_type": "cx21"
             },
-            {
-                "name": "controller2",
-                "role": "controller+worker"
+            "controller2": {
+                "image": "ubuntu-22.04",
+                "location": "fsn1",
+                "role": "controller+worker",
+                "server_type": "cx21"
             },
-            {
-                "name": "controller3",
-                "role": "controller+worker"
+            "controller3": {
+                "image": "ubuntu-22.04",
+                "location": "fsn1",
+                "role": "controller+worker",
+                "server_type": "cx21"
             }
-        ],
+        },
         "after_sensitive": false,
-        "after_unknown": [
-            {
-                "ipv4_address": true
+        "after_unknown": {
+            "controller1": {
+                "ipv4": true
             },
-            {
-                "ipv4_address": true
+            "controller2": {
+                "ipv4": true
             },
-            {
-                "ipv4_address": true
+            "controller3": {
+                "ipv4": true
             }
-        ],
+        },
         "before": null,
         "before_sensitive": false
     }

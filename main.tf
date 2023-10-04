@@ -15,11 +15,6 @@ provider "hcloud" {
   token = var.hcloud_token
 }
 
-# HACK: Needed to make outputs testable.
-locals {
-  kubeconfig = module.k8s.kubeconfig
-}
-
 module "infrastructure" {
   source = "./infrastructure"
 

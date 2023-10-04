@@ -6,11 +6,11 @@ resource "hcloud_ssh_key" "ssh_public_keys" {
 }
 
 resource "hcloud_server" "nodes" {
-  for_each = { for node in var.nodes : node.name => node }
+  for_each = var.nodes
 
   depends_on = [hcloud_ssh_key.ssh_public_keys]
 
-  name        = each.value.name
+  name        = each.key
   image       = each.value.image 
   location    = each.value.location
   server_type = each.value.server_type
