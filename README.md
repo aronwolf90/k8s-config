@@ -35,11 +35,11 @@ module "cluster" {
     { name = "default", key = file("~/.ssh/id_rsa.pub") }
   ]
 
-  nodes = [
-    { name = "controller1", image = "ubuntu-22.04", location = "fsn1", server_type = "cx21", role = "controller+worker" },
-    { name = "controller2", image = "ubuntu-22.04", location = "fsn1", server_type = "cx21", role = "controller+worker" },
-    { name = "controller3", image = "ubuntu-22.04", location = "fsn1", server_type = "cx21", role = "controller+worker" },
-  ]
+  nodes = {
+    "controller1" = { image = "ubuntu-22.04", location = "fsn1", server_type = "cx21", role = "controller+worker" },
+    "controller2" = { image = "ubuntu-22.04", location = "fsn1", server_type = "cx21", role = "controller+worker" },
+    "controller3" = { image = "ubuntu-22.04", location = "fsn1", server_type = "cx21", role = "controller+worker" },
+  }
 }
 ```
 
