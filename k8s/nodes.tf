@@ -1,6 +1,8 @@
 resource "null_resource" "nodes" {
   for_each = var.nodes
 
+  depends_on = [k0s_cluster.cluster]
+
   triggers = {
     ipv4 = each.value.ipv4
     name = each.key
@@ -17,15 +19,17 @@ resource "null_resource" "nodes" {
   # Restic need the folder on this location to make it work 
   provisioner "remote-exec" {
     inline = [
-      "mkdir -p /var/lib/kubelet/",
-      "ln -sf /var/lib/k0s/kubelet/pods/ /var/lib/kubelet/pods"
+      "ln -sf /var/lib/k0s/kubelet/ /var/lib/kubelet"
     ]
   }
 
   provisioner "remote-exec" {
     when = destroy
     inline = [
+      "#!/bin/bash",
+      "[[ $(k0s kubectl get nodes | grep -v SchedulingDisabled | wc -l) -le 2 ]] && exit 0",
       "k0s kubectl drain --ignore-daemonsets --delete-emptydir-data ${self.triggers.name} || true",
+      "k0s kubectl delete node ${self.triggers.name} || true",
       "k0s etcd leave ${self.triggers.name} || true"
     ]
   }

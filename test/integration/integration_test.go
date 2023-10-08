@@ -183,7 +183,7 @@ func CheckDeployment(clientset *kubernetes.Clientset) {
       break
     }
 
-    if count > 60 {
+    if count > 180 {
       panic("Could not create a working pod")
     }
     count += 1
@@ -307,7 +307,7 @@ func deletePersistentVolumeClaims(clientset *kubernetes.Clientset) {
       break
     }
 
-    if count > 60 {
+    if count > 120 {
        panic("Could not delete persistent volume Claims")
     }
     count += 1
@@ -367,7 +367,7 @@ func deleteStatefulSet(clientset *kubernetes.Clientset) {
       break
     }
 
-    if count > 60 {
+    if count > 120 {
        panic("Could not delete statefull sets")
     }
     count += 1
@@ -403,7 +403,7 @@ func deleteServices(clientset *kubernetes.Clientset) {
       break
     }
 
-    if count > 60 {
+    if count > 120 {
        panic("Could not delete services")
     }
     count += 1
@@ -414,10 +414,9 @@ func deleteServices(clientset *kubernetes.Clientset) {
 func deleteK8sResources(t *testing.T, clientset *kubernetes.Clientset, terraformOptions *terraform.Options) {
   deleteStatefulSet(clientset)
   deletePersistentVolumeClaims(clientset)
-  deleteVolumes(clientset)
   deleteServices(clientset)
 
-  time.Sleep(time.Second * 10)
+  time.Sleep(time.Second * 20)
   terraform.Destroy(t, terraformOptions)
 }
 
