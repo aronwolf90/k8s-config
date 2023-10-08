@@ -18,3 +18,7 @@ variable "private_ssh_key_path" {
 variable "k0s_version" {
   type = string
 }
+
+variable "drain_timeout" {
+  type = number
+}

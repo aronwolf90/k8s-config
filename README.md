@@ -31,6 +31,7 @@ module "cluster" {
   hcloud_token         = "MY_HETZNER_TOKEN"
   k0s_version          = "v1.21.14+k0s.0"
   private_ssh_key_path = "~/.ssh/id_rsa" 
+  drain_timeout        = 40 # seconds
   public_ssh_keys      = [
     { name = "default", key = file("~/.ssh/id_rsa.pub") }
   ]

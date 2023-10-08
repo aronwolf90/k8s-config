@@ -32,6 +32,7 @@ module "k8s" {
   private_ssh_key_path = var.private_ssh_key_path
   load_balancer_ipv4   = module.infrastructure.load_balancer_ipv4_address
   nodes                = module.infrastructure.nodes
+  drain_timeout        = var.drain_timeout
 }
 
 module "config" {

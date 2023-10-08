@@ -39,3 +39,9 @@ variable "nodes" {
     "controller3" = { image = "ubuntu-22.04", location = "fsn1", server_type = "cx21", role = "controller+worker" },
   }
 }
+
+variable "drain_timeout" {
+  type = number
+
+  default = 40
+}
