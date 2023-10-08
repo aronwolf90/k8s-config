@@ -8,6 +8,7 @@ module "k8s" {
   k0s_version          = var.k0s_version
   private_ssh_key_path = "~/.ssh/id_rsa"
   load_balancer_ipv4   = "127.0.0.4"
+  drain_timeout        = 40
   nodes = {
     "controller1" = { ipv4 = "127.0.0.1", role = "controller+worker" },
     "controller2" = { ipv4 = "127.0.0.2", role = "controller+worker" },
