@@ -13,7 +13,17 @@ provider "hcloud" {
 variable "private_ssh_key_path" {
   default = "~/.ssh/id_rsa"
 }
+
 variable "nodes" {
+  type = map(
+    object({
+      image       = string
+      location    = string
+      server_type = string
+      role        = string
+    })
+  )
+
   default = {
     "controller1" = { image = "ubuntu-22.04", location = "fsn1", server_type = "cx21", role = "controller+worker" },
     "controller2" = { image = "ubuntu-22.04", location = "fsn1", server_type = "cx21", role = "controller+worker" },
