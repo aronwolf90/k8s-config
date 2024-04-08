@@ -81,10 +81,11 @@ Just change `k0s_version` to the desired version and run `terraform apply`.
   ```
   hcloud_token = <token>
   ```
+- Execute: `asdf install`
 - Execute:
-  * For integration test: `docker-compose run bash -c "cd test/integration && go test -timeout 99999s"`.
-  * For testing all supported K8s versions `docker-compose run bash -c "cd test/integration && TEST_K8S_VERSIONS=true go test -timeout 99999s"`
-  * For unit test: `docker-compose run bash -c test/unit && go test`.
+  * For integration test: `cd test/integration && go test -timeout 99999s"`.
+  * For testing all supported K8s versions `cd test/integration && TEST_K8S_VERSIONS=true go test -timeout 99999s`
+  * For unit test: `cd test/unit && go test`.
 
 # TODOs
 * Remove the need to have an installed `kubectl`. 
