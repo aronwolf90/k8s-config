@@ -1,12 +1,12 @@
 # Hetzner cluster
 
-It is a terraform module that allow to deploy a kubeadm based cluster on hetzner easily:
+It is a terraform module that allow to deploy a k0s based cluster on hetzner easily:
 
 It supports the following features:
 - Setup a full working k8s in a few minutes.
 - Upgrade the k8s version by just changing the version number.
 - Volumes (using Hetzner volumes)
-- Loadbalancers (Usings Hetzner load balancers)
+- Load balancers (Using Hetzner load balancers)
 
 ## Purpose of this cluster
 This cluster is thought for personal projects and small companies that need HA. This traduces in:
@@ -14,7 +14,7 @@ This cluster is thought for personal projects and small companies that need HA. 
 - Make it possible to use the same nodes for controllers and workers.
 
 ## Usage
-Add to your terraform file the following:
+Add to your tofu file the following:
 ```bash
 module "cluster" {             
   source = "git::https://gitlab.com/webcloudpower/hetzner_cluster.git?ref=0.8.2"
@@ -44,7 +44,8 @@ module "cluster" {
 }
 ```
 
-The module assumes that you have your public key in `~/.ssh/id_rsa.pub`. Once you have adjusted your terraform file, you just have to run `terraform apply`.
+The module assumes that you have your public key in `~/.ssh/id_rsa.pub`. Once you have
+adjusted your terraform file, you just have to run `tofu apply`.
 
 ## Outputs
 * `host`
@@ -64,7 +65,7 @@ NOTE: Comparing to GCloud, it is 3 times cheaper for the first cluster and 5 tim
 NOTE: A load balancer is used for the api to allow easier disaster recovery.
 
 ## Upgrade
-Just change `k0s_version` to the desired version and run `terraform apply`.
+Just change `k0s_version` to the desired version and run `tofu apply`.
 
 ## Tested against
 * v1.21.14+k0s.0 
@@ -77,17 +78,16 @@ Just change `k0s_version` to the desired version and run `terraform apply`.
 * v1.28.2+k0s.0
 
 # Test
-- Create a `test/integration/terraform.tfvars` file with the following content:
+- Create a `tests/e2e/terraform.tfvars` file with the following content:
   ```
   hcloud_token = <token>
   ```
 - Execute: `asdf install`
 - Execute:
-  * For integration test: `cd test/integration && go test -timeout 99999s"`.
-  * For testing all supported K8s versions `cd test/integration && TEST_K8S_VERSIONS=true go test -timeout 99999s`
-  * For unit test: `cd test/unit && go test`.
+  * For integration test: `cd tests/e2e && go test -timeout 99999s"`.
+  * For testing all supported K8s versions `cd tests/e2e && TEST_K8S_VERSIONS=true go test -timeout 99999s`
+  * For unit test: `tofu test`.
 
 # TODOs
 * Remove the need to have an installed `kubectl`. 
-* Add autoscaling (Do we really need it?).
-* Find a better way than symlinks for testing.
+* Add auto scaling (Do we really need it?).
