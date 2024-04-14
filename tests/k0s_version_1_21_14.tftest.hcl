@@ -1,6 +1,6 @@
 variables {
   load_balancer_ipv4   = "100.100.100.01"
-  private_ssh_key_path = "tests/unit/fixtures/ssh_host_first_key"
+  private_ssh_key_path = "tests/fixtures/ssh_host_first_key"
   k0s_version          = "v1.21.14+k0s.0"
   drain_timeout        = 40
   nodes = {

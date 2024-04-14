@@ -3,7 +3,7 @@ provider "hcloud" {
 }
 
 variables {
-  private_ssh_key_path = "~/.ssh/id_rsa"
+  private_ssh_key_path = "tests/fixtures/ssh_host_first_key.pub"
 
   nodes = {
     node1 = {

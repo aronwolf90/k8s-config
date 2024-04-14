@@ -13,5 +13,8 @@ validate:
 test:
   image: registry.gitlab.com/webcloudpower/hetzner_cluster
   script:
+    - mkdir -p ~/.ssh
+    - cp tests/fixtures/ssh_host_first_key ~/.ssh/id_rsa
+    - cp tests/fixtures/ssh_host_first_key.pub ~/.ssh/id_rsa.pub
     - tofu init
     - tofu test 
