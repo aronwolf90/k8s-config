@@ -33,7 +33,7 @@ run "infrastructure_ssh_public_keys" {
   }
 
   assert {
-    condition =  length(hcloud_ssh_key.ssh_public_keys) == 2
+    condition     = length(hcloud_ssh_key.ssh_public_keys) == 2
     error_message = "Not correct ssh keys"
   }
 }

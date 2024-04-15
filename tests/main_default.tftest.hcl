@@ -6,7 +6,7 @@ run "default_config" {
   command = plan
 
   assert {
-    condition = output.host == null
+    condition     = output.host == null
     error_message = "Default config is not working"
   }
 }

@@ -35,7 +35,7 @@ run "module_infrastructure_hcloud_load_balancer_target" {
   }
 
   assert {
-    condition =  length(hcloud_load_balancer_target.controller) == 2
+    condition     = length(hcloud_load_balancer_target.controller) == 2
     error_message = "Wrong number of hcloud_load_balancer_targets"
   }
 }

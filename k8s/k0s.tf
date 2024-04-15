@@ -13,14 +13,14 @@ resource "k0s_cluster" "cluster" {
   hosts = [
     for key, node in var.nodes :
     {
-      role = node.role,
+      role      = node.role,
       no_taints = tonumber(join("", regex("([0-9]+).([0-9]+)", var.k0s_version))) > 122 ? true : null
-      ssh  = {
+      ssh = {
         address  = node.ipv4
         port     = 22
         user     = "root"
         key_path = var.private_ssh_key_path
-      } 
+      }
       install_flags = [
         "--enable-cloud-provider=true",
         "--kubelet-extra-args=--cloud-provider=external",
@@ -32,7 +32,7 @@ resource "k0s_cluster" "cluster" {
     spec = {
       api = {
         externalAddress = var.load_balancer_ipv4,
-        sans = [var.load_balancer_ipv4]
+        sans            = [var.load_balancer_ipv4]
       }
     }
   })
