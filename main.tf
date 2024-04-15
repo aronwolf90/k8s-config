@@ -6,7 +6,7 @@ terraform {
     k0s = {
       source = "alessiodionisi/k0s"
     }
-    null = {}
+    null  = {}
     local = {}
   }
 }
@@ -18,9 +18,9 @@ provider "hcloud" {
 module "infrastructure" {
   source = "./infrastructure"
 
-  public_ssh_keys = var.public_ssh_keys
+  public_ssh_keys      = var.public_ssh_keys
   private_ssh_key_path = var.private_ssh_key_path
-  nodes = var.nodes
+  nodes                = var.nodes
 }
 
 module "k8s" {
@@ -40,6 +40,6 @@ module "config" {
 
   source = "./config"
 
-  kubeconfig = module.k8s.kubeconfig
+  kubeconfig   = module.k8s.kubeconfig
   hcloud_token = var.hcloud_token
 }

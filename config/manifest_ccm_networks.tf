@@ -4,7 +4,7 @@ locals {
 
 resource "null_resource" "ccm-networks" {
   triggers = {
-    file_md5 = md5(file(local.ccm_networks_file_path)) 
+    file_md5 = md5(file(local.ccm_networks_file_path))
   }
 
   provisioner "local-exec" {

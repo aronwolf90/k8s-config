@@ -27,7 +27,7 @@ run "module_infrastructure_v1_21_14" {
   }
 
   assert {
-    condition = tolist(k0s_cluster.cluster.hosts)[0].no_taints == null
+    condition     = tolist(k0s_cluster.cluster.hosts)[0].no_taints == null
     error_message = "Wrong number of hcloud_load_balancer_targets"
   }
 }
