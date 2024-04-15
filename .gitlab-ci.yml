@@ -1,20 +1,22 @@
+include:
+  - component: gitlab.com/components/opentofu/job-templates@0.18.0-rc5
+    inputs:
+      version: 0.18.0-rc5
+      opentofu_version: 1.6.2
+
+stages: [validate]
+
 fmt:
-  image: registry.gitlab.com/webcloudpower/hetzner_cluster
-  script:
-    - tofu init
-    - tofu fmt
+  extends: [.opentofu:fmt]
+  image: registry.gitlab.com/webcloudpower/hetzner_cluster 
+  stage: validate
 
 validate:
+  extends: [.opentofu:validate]
   image: registry.gitlab.com/webcloudpower/hetzner_cluster
-  script:
-    - tofu init
-    - tofu fmt
+  stage: validate
 
 test:
+  extends: [.opentofu:test]
   image: registry.gitlab.com/webcloudpower/hetzner_cluster
-  script:
-    - mkdir -p ~/.ssh
-    - cp tests/fixtures/ssh_host_first_key ~/.ssh/id_rsa
-    - cp tests/fixtures/ssh_host_first_key.pub ~/.ssh/id_rsa.pub
-    - tofu init
-    - tofu test 
+  stage: validate
